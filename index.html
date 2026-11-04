@@ -1,23 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b1222">
-    <meta name="description"
-          content="Control personal de horas de trabajo">
+    <meta name="description" content="Control personal de horas de trabajo">
 
     <title>Mi Control Horario</title>
 
     <link rel="stylesheet" href="style.css">
 
+
+    <!-- ICONOS DE CONTROL HORARIO -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+
+    <meta name="apple-mobile-web-app-title" content="Control Horario">
+
+
     <!-- SUPABASE -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
-        defer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer>
     </script>
 
     <script src="supabase-config.js" defer></script>
@@ -42,32 +46,20 @@
             </div>
 
             <div class="header-actions">
-                <button
-                    id="logoutButton"
-                    class="icon-btn"
-                    type="button"
-                    title="Cerrar sesión"
-                    aria-label="Cerrar sesión"
-                    hidden>
+                <button id="logoutButton" class="icon-btn" type="button" title="Cerrar sesión"
+                    aria-label="Cerrar sesión" hidden>
                     ⏻
                 </button>
 
-                <button
-                    id="settingsButton"
-                    class="icon-btn"
-                    type="button"
-                    title="Configuración"
-                    aria-label="Configuración"
-                    hidden>
+                <button id="settingsButton" class="icon-btn" type="button" title="Configuración"
+                    aria-label="Configuración" hidden>
                     ⚙
                 </button>
             </div>
         </header>
 
         <!-- INICIO DE SESIÓN -->
-        <section id="loginScreen"
-                 class="login-screen"
-                 hidden>
+        <section id="loginScreen" class="login-screen" hidden>
 
             <div class="login-card">
 
@@ -85,66 +77,38 @@
                         Correo electrónico
                     </label>
 
-                    <input
-                        type="email"
-                        id="loginEmail"
-                        name="email"
-                        autocomplete="username"
-                        placeholder="tu@email.com"
-                        required
-                    >
+                    <input type="email" id="loginEmail" name="email" autocomplete="username" placeholder="tu@email.com"
+                        required>
 
                     <label for="loginPassword">
                         Contraseña
                     </label>
 
-                    <input
-                        type="password"
-                        id="loginPassword"
-                        name="password"
-                        autocomplete="current-password"
-                        placeholder="Tu contraseña"
-                        required
-                    >
+                    <input type="password" id="loginPassword" name="password" autocomplete="current-password"
+                        placeholder="Tu contraseña" required>
 
                     <div class="remember-container">
                         <label class="remember-label">
 
-                            <input
-                                type="checkbox"
-                                id="rememberMe"
-                                checked
-                            >
+                            <input type="checkbox" id="rememberMe" checked>
 
                             <span>Recordar mi correo</span>
                         </label>
                     </div>
 
-                    <button
-                        type="submit"
-                        class="btn-primary full-btn"
-                        id="loginButton">
+                    <button type="submit" class="btn-primary full-btn" id="loginButton">
                         Iniciar sesión
                     </button>
 
                 </form>
 
-                <p
-                    id="loginMessage"
-                    class="message"
-                    role="status"
-                    aria-live="polite">
+                <p id="loginMessage" class="message" role="status" aria-live="polite">
                 </p>
             </div>
         </section>
 
         <!-- ESTADO DE LA CONEXIÓN -->
-        <div
-            id="cloudStatus"
-            class="cloud-status"
-            role="status"
-            aria-live="polite"
-            hidden>
+        <div id="cloudStatus" class="cloud-status" role="status" aria-live="polite" hidden>
         </div>
 
         <!-- APLICACIÓN PRINCIPAL -->
@@ -192,19 +156,13 @@
 
                     <div class="month-navigation">
 
-                        <button
-                            id="prevMonth"
-                            type="button"
-                            aria-label="Mes anterior">
+                        <button id="prevMonth" type="button" aria-label="Mes anterior">
                             ‹
                         </button>
 
                         <span id="monthTitle"></span>
 
-                        <button
-                            id="nextMonth"
-                            type="button"
-                            aria-label="Mes siguiente">
+                        <button id="nextMonth" type="button" aria-label="Mes siguiente">
                             ›
                         </button>
                     </div>
@@ -272,10 +230,7 @@
                         <h2>Balance de la semana</h2>
                     </div>
 
-                    <button
-                        id="todayButton"
-                        type="button"
-                        class="text-btn">
+                    <button id="todayButton" type="button" class="text-btn">
                         Ir a hoy
                     </button>
                 </div>
@@ -283,24 +238,14 @@
                 <!-- NAVEGACIÓN SEMANAL -->
                 <div class="week-navigation">
 
-                    <button
-                        id="prevWeek"
-                        type="button"
-                        class="week-nav-btn"
-                        aria-label="Semana anterior">
+                    <button id="prevWeek" type="button" class="week-nav-btn" aria-label="Semana anterior">
                         ‹
                     </button>
 
-                    <p
-                        id="weekRange"
-                        class="week-range">
+                    <p id="weekRange" class="week-range">
                     </p>
 
-                    <button
-                        id="nextWeek"
-                        type="button"
-                        class="week-nav-btn"
-                        aria-label="Semana siguiente">
+                    <button id="nextWeek" type="button" class="week-nav-btn" aria-label="Semana siguiente">
                         ›
                     </button>
                 </div>
@@ -367,9 +312,7 @@
                     <span>D</span>
                 </div>
 
-                <div
-                    id="calendarGrid"
-                    class="calendar-grid">
+                <div id="calendarGrid" class="calendar-grid">
                 </div>
 
                 <div class="calendar-legend">
@@ -442,13 +385,8 @@
                             Horas trabajadas
                         </label>
 
-                        <input
-                            type="text"
-                            id="hoursInput"
-                            inputmode="numeric"
-                            placeholder="Ej. 8:16"
-                            autocomplete="off"
-                        >
+                        <input type="text" id="hoursInput" inputmode="numeric" placeholder="Ej. 8:16"
+                            autocomplete="off">
 
                         <p class="helper">
                             Introduce las horas efectivas
@@ -457,10 +395,7 @@
                         </p>
                     </div>
 
-                    <p
-                        id="freeDayInfo"
-                        class="helper"
-                        hidden>
+                    <p id="freeDayInfo" class="helper" hidden>
                         Este tipo de día no genera
                         horas obligatorias.
                     </p>
@@ -469,34 +404,22 @@
                         Observaciones (opcional)
                     </label>
 
-                    <textarea
-                        id="noteInput"
-                        rows="2"
-                        placeholder="Ej. Festivo local, vacaciones...">
+                    <textarea id="noteInput" rows="2" placeholder="Ej. Festivo local, vacaciones...">
                     </textarea>
 
                     <div class="form-buttons">
 
-                        <button
-                            type="button"
-                            id="deleteEntry"
-                            class="btn-secondary">
+                        <button type="button" id="deleteEntry" class="btn-secondary">
                             Borrar
                         </button>
 
-                        <button
-                            type="submit"
-                            class="btn-primary">
+                        <button type="submit" class="btn-primary">
                             Guardar día
                         </button>
                     </div>
                 </form>
 
-                <p
-                    id="entryMessage"
-                    class="message"
-                    role="status"
-                    aria-live="polite">
+                <p id="entryMessage" class="message" role="status" aria-live="polite">
                 </p>
             </section>
 
@@ -513,15 +436,11 @@
                         <h2>Movimientos</h2>
                     </div>
 
-                    <span
-                        id="historyCount"
-                        class="small-muted">
+                    <span id="historyCount" class="small-muted">
                     </span>
                 </div>
 
-                <div
-                    id="historyList"
-                    class="history-list">
+                <div id="historyList" class="history-list">
                 </div>
             </section>
 
@@ -584,19 +503,13 @@
     </div>
 
     <!-- CONFIGURACIÓN -->
-    <dialog
-        id="settingsDialog"
-        class="settings-dialog">
+    <dialog id="settingsDialog" class="settings-dialog">
 
         <div class="dialog-header">
 
             <h2>Configuración</h2>
 
-            <button
-                id="closeSettings"
-                type="button"
-                class="icon-btn"
-                aria-label="Cerrar">
+            <button id="closeSettings" type="button" class="icon-btn" aria-label="Cerrar">
                 ✕
             </button>
         </div>
@@ -612,21 +525,14 @@
                 Saldo inicial (minutos)
             </label>
 
-            <input
-                type="number"
-                id="initialBalance"
-                step="1"
-            >
+            <input type="number" id="initialBalance" step="1">
 
             <p class="helper">
                 Ejemplo: 90 significa +1 h 30 min.
                 Para deber 30 minutos, introduce -30.
             </p>
 
-            <button
-                id="saveSettings"
-                type="button"
-                class="btn-primary full-btn">
+            <button id="saveSettings" type="button" class="btn-primary full-btn">
                 Guardar configuración
             </button>
 
@@ -639,26 +545,15 @@
                 un archivo JSON anterior.
             </p>
 
-            <button
-                id="exportButton"
-                type="button"
-                class="btn-secondary full-btn">
+            <button id="exportButton" type="button" class="btn-secondary full-btn">
                 Exportar datos
             </button>
 
-            <button
-                id="importButton"
-                type="button"
-                class="btn-secondary full-btn">
+            <button id="importButton" type="button" class="btn-secondary full-btn">
                 Importar datos
             </button>
 
-            <input
-                type="file"
-                id="importFile"
-                accept=".json,application/json"
-                hidden
-            >
+            <input type="file" id="importFile" accept=".json,application/json" hidden>
 
             <hr>
 
@@ -671,22 +566,16 @@
                 que ya existen en la nube.
             </p>
 
-            <button
-                id="migrateButton"
-                type="button"
-                class="btn-secondary full-btn">
+            <button id="migrateButton" type="button" class="btn-secondary full-btn">
                 Importar mis horas anteriores
             </button>
 
-            <p
-                id="settingsMessage"
-                class="message"
-                role="status"
-                aria-live="polite">
+            <p id="settingsMessage" class="message" role="status" aria-live="polite">
             </p>
 
         </div>
     </dialog>
 
 </body>
+
 </html>

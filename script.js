@@ -11,28 +11,28 @@ const EMAIL_KEY = "rememberedEmail";
 const DAILY_MINUTES = 480;
 
 const MONTHS = [
-  "enero", "febrero", "marzo", "abril",
-  "mayo", "junio", "julio", "agosto",
-  "septiembre", "octubre", "noviembre", "diciembre"
+    "enero", "febrero", "marzo", "abril",
+    "mayo", "junio", "julio", "agosto",
+    "septiembre", "octubre", "noviembre", "diciembre"
 ];
 
 const WEEKDAYS = [
-  "domingo", "lunes", "martes", "miércoles",
-  "jueves", "viernes", "sábado"
+    "domingo", "lunes", "martes", "miércoles",
+    "jueves", "viernes", "sábado"
 ];
 
 const DAY_TYPES = {
-  work: "Laborable",
-  holiday: "Festivo",
-  vacation: "Vacaciones",
-  leave: "Ausencia justificada",
-  rest: "Descanso / día libre"
+    work: "Laborable",
+    holiday: "Festivo",
+    vacation: "Vacaciones",
+    leave: "Ausencia justificada",
+    rest: "Descanso / día libre"
 };
 
 const $ = id => document.getElementById(id);
 
 const pad = number =>
-  String(number).padStart(2, "0");
+    String(number).padStart(2, "0");
 
 // ========================================
 // ESTADO DE LA APLICACIÓN
@@ -42,8 +42,8 @@ let currentUser = null;
 let cloudSettingsExists = false;
 
 let state = {
-  initialBalance: 0,
-  entries: {}
+    initialBalance: 0,
+    entries: {}
 };
 
 let selectedDate = todayISO();
@@ -57,80 +57,80 @@ let loadingData = false;
 // ========================================
 
 function toISO(date) {
-  return (
-    date.getFullYear() + "-" +
-    pad(date.getMonth() + 1) + "-" +
-    pad(date.getDate())
-  );
+    return (
+        date.getFullYear() + "-" +
+        pad(date.getMonth() + 1) + "-" +
+        pad(date.getDate())
+    );
 }
 
 function fromISO(value) {
-  const [year, month, day] =
-    value.split("-").map(Number);
+    const [year, month, day] =
+        value.split("-").map(Number);
 
-  return new Date(year, month - 1, day);
+    return new Date(year, month - 1, day);
 }
 
 function validISO(value) {
-  return (
-    typeof value === "string" &&
-    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
-    toISO(fromISO(value)) === value
-  );
+    return (
+        typeof value === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+        toISO(fromISO(value)) === value
+    );
 }
 
 function todayISO() {
-  return toISO(new Date());
+    return toISO(new Date());
 }
 
 function addDays(date, amount) {
-  const result = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  );
+    const result = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    );
 
-  result.setDate(
-    result.getDate() + amount
-  );
+    result.setDate(
+        result.getDate() + amount
+    );
 
-  return result;
+    return result;
 }
 
 function mondayOf(date) {
-  const offset = (date.getDay() + 6) % 7;
+    const offset = (date.getDay() + 6) % 7;
 
-  return addDays(date, -offset);
+    return addDays(date, -offset);
 }
 
 function monthStart(date) {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    1
-  );
+    return new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        1
+    );
 }
 
 function monthEnd(date) {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    0
-  );
+    return new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0
+    );
 }
 
 function isWeekday(date) {
-  return (
-    date.getDay() >= 1 &&
-    date.getDay() <= 5
-  );
+    return (
+        date.getDay() >= 1 &&
+        date.getDay() <= 5
+    );
 }
 
 function shortDate(date) {
-  return date.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short"
-  });
+    return date.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "short"
+    });
 }
 
 // ========================================
@@ -138,67 +138,67 @@ function shortDate(date) {
 // ========================================
 
 function parseHours(value) {
-  const text = String(value).trim();
+    const text = String(value).trim();
 
-  const match =
-    /^(\d{1,3})(?::([0-5]\d))?$/.exec(text);
+    const match =
+        /^(\d{1,3})(?::([0-5]\d))?$/.exec(text);
 
-  if (!match) {
-    return null;
-  }
+    if (!match) {
+        return null;
+    }
 
-  const hours = Number(match[1]);
-  const minutes = Number(match[2] || 0);
+    const hours = Number(match[1]);
+    const minutes = Number(match[2] || 0);
 
-  if (
-    hours > 24 ||
-    (hours === 24 && minutes > 0)
-  ) {
-    return null;
-  }
+    if (
+        hours > 24 ||
+        (hours === 24 && minutes > 0)
+    ) {
+        return null;
+    }
 
-  return hours * 60 + minutes;
+    return hours * 60 + minutes;
 }
 
 function formatHours(value) {
-  const minutes = Math.abs(value);
+    const minutes = Math.abs(value);
 
-  const hours = Math.floor(minutes / 60);
-  const remaining = minutes % 60;
+    const hours = Math.floor(minutes / 60);
+    const remaining = minutes % 60;
 
-  return `${hours} h ${pad(remaining)} min`;
+    return `${hours} h ${pad(remaining)} min`;
 }
 
 function formatBalance(value) {
-  const sign = value >= 0 ? "+" : "−";
+    const sign = value >= 0 ? "+" : "−";
 
-  return sign + formatHours(value);
+    return sign + formatHours(value);
 }
 
 function balanceClass(value) {
-  if (value > 0) {
-    return "positive";
-  }
+    if (value > 0) {
+        return "positive";
+    }
 
-  if (value < 0) {
-    return "negative";
-  }
+    if (value < 0) {
+        return "negative";
+    }
 
-  return "neutral";
+    return "neutral";
 }
 
 function applyBalance(element, value) {
-  element.textContent = formatBalance(value);
+    element.textContent = formatBalance(value);
 
-  element.classList.remove(
-    "positive",
-    "negative",
-    "neutral"
-  );
+    element.classList.remove(
+        "positive",
+        "negative",
+        "neutral"
+    );
 
-  element.classList.add(
-    balanceClass(value)
-  );
+    element.classList.add(
+        balanceClass(value)
+    );
 }
 
 // ========================================
@@ -206,25 +206,25 @@ function applyBalance(element, value) {
 // ========================================
 
 function showMessage(id, message, error = false) {
-  const element = $(id);
+    const element = $(id);
 
-  element.textContent = message;
+    element.textContent = message;
 
-  element.className = error
-    ? "message error"
-    : "message";
+    element.className = error
+        ? "message error"
+        : "message";
 }
 
 function cloudStatus(message, error = false) {
-  const element = $("cloudStatus");
+    const element = $("cloudStatus");
 
-  element.textContent = message;
+    element.textContent = message;
 
-  element.className = error
-    ? "cloud-status error"
-    : "cloud-status";
+    element.className = error
+        ? "cloud-status error"
+        : "cloud-status";
 
-  element.hidden = !message;
+    element.hidden = !message;
 }
 
 // ========================================
@@ -232,32 +232,32 @@ function cloudStatus(message, error = false) {
 // ========================================
 
 function validEntry(entry) {
-  return (
-    entry &&
-    typeof entry === "object" &&
-    Object.hasOwn(DAY_TYPES, entry.type) &&
-    Number.isSafeInteger(entry.minutes) &&
-    entry.minutes >= 0 &&
-    entry.minutes <= 1440 &&
-    typeof entry.note === "string" &&
-    entry.note.length <= 2000
-  );
+    return (
+        entry &&
+        typeof entry === "object" &&
+        Object.hasOwn(DAY_TYPES, entry.type) &&
+        Number.isSafeInteger(entry.minutes) &&
+        entry.minutes >= 0 &&
+        entry.minutes <= 1440 &&
+        typeof entry.note === "string" &&
+        entry.note.length <= 2000
+    );
 }
 
 function validBackup(data) {
-  return (
-    data &&
-    typeof data === "object" &&
-    Number.isSafeInteger(data.initialBalance) &&
-    Math.abs(data.initialBalance) <= 10000000 &&
-    data.entries &&
-    typeof data.entries === "object" &&
-    !Array.isArray(data.entries) &&
-    Object.entries(data.entries).every(
-      ([date, entry]) =>
-        validISO(date) && validEntry(entry)
-    )
-  );
+    return (
+        data &&
+        typeof data === "object" &&
+        Number.isSafeInteger(data.initialBalance) &&
+        Math.abs(data.initialBalance) <= 10000000 &&
+        data.entries &&
+        typeof data.entries === "object" &&
+        !Array.isArray(data.entries) &&
+        Object.entries(data.entries).every(
+            ([date, entry]) =>
+                validISO(date) && validEntry(entry)
+        )
+    );
 }
 
 // ========================================
@@ -265,16 +265,16 @@ function validBackup(data) {
 // ========================================
 
 function readPreviousLocalData() {
-  try {
-    const saved = JSON.parse(
-      localStorage.getItem(STORAGE_KEY)
-    );
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem(STORAGE_KEY)
+        );
 
-    return validBackup(saved) ? saved : null;
+        return validBackup(saved) ? saved : null;
 
-  } catch {
-    return null;
-  }
+    } catch {
+        return null;
+    }
 }
 
 // ========================================
@@ -284,22 +284,22 @@ function readPreviousLocalData() {
 // Solo guardamos el correo, nunca la contraseña.
 
 function loadRememberedEmail() {
-  const email = localStorage.getItem(EMAIL_KEY);
+    const email = localStorage.getItem(EMAIL_KEY);
 
-  if (email) {
-    $("loginEmail").value = email;
-    $("rememberMe").checked = true;
-  } else {
-    $("rememberMe").checked = false;
-  }
+    if (email) {
+        $("loginEmail").value = email;
+        $("rememberMe").checked = true;
+    } else {
+        $("rememberMe").checked = false;
+    }
 }
 
 function saveRememberedEmail(email) {
-  if ($("rememberMe").checked) {
-    localStorage.setItem(EMAIL_KEY, email);
-  } else {
-    localStorage.removeItem(EMAIL_KEY);
-  }
+    if ($("rememberMe").checked) {
+        localStorage.setItem(EMAIL_KEY, email);
+    } else {
+        localStorage.removeItem(EMAIL_KEY);
+    }
 }
 
 // ========================================
@@ -307,31 +307,31 @@ function saveRememberedEmail(email) {
 // ========================================
 
 function showLogin() {
-  currentUser = null;
+    currentUser = null;
 
-  $("loginScreen").hidden = false;
-  $("appMain").hidden = true;
+    $("loginScreen").hidden = false;
+    $("appMain").hidden = true;
 
-  $("logoutButton").hidden = true;
-  $("settingsButton").hidden = true;
+    $("logoutButton").hidden = true;
+    $("settingsButton").hidden = true;
 
-  if ($("settingsDialog").open) {
-    $("settingsDialog").close();
-  }
+    if ($("settingsDialog").open) {
+        $("settingsDialog").close();
+    }
 
-  $("loginPassword").value = "";
+    $("loginPassword").value = "";
 
-  loadRememberedEmail();
+    loadRememberedEmail();
 
-  cloudStatus("");
+    cloudStatus("");
 }
 
 function showApplication() {
-  $("loginScreen").hidden = true;
-  $("appMain").hidden = false;
+    $("loginScreen").hidden = true;
+    $("appMain").hidden = false;
 
-  $("logoutButton").hidden = false;
-  $("settingsButton").hidden = false;
+    $("logoutButton").hidden = false;
+    $("settingsButton").hidden = false;
 }
 
 // ========================================
@@ -339,57 +339,57 @@ function showApplication() {
 // ========================================
 
 $("loginForm").addEventListener(
-  "submit",
-  async event => {
-    event.preventDefault();
+    "submit",
+    async event => {
+        event.preventDefault();
 
-    const email = $("loginEmail").value.trim();
-    const password = $("loginPassword").value;
+        const email = $("loginEmail").value.trim();
+        const password = $("loginPassword").value;
 
-    const button = $("loginButton");
+        const button = $("loginButton");
 
-    button.disabled = true;
-    button.textContent = "Accediendo...";
+        button.disabled = true;
+        button.textContent = "Accediendo...";
 
-    showMessage("loginMessage", "");
+        showMessage("loginMessage", "");
 
-    try {
-      const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
+        try {
+            const { data, error } =
+                await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
 
-      if (error) {
-        throw error;
-      }
+            if (error) {
+                throw error;
+            }
 
-      if (!data.user) {
-        throw new Error(
-          "No se ha podido obtener el usuario."
-        );
-      }
+            if (!data.user) {
+                throw new Error(
+                    "No se ha podido obtener el usuario."
+                );
+            }
 
-      await openAccount(data.user);
+            await openAccount(data.user);
 
-      // Guardamos la preferencia únicamente
-      // después de iniciar sesión correctamente.
-      saveRememberedEmail(email);
+            // Guardamos la preferencia únicamente
+            // después de iniciar sesión correctamente.
+            saveRememberedEmail(email);
 
-      $("loginPassword").value = "";
+            $("loginPassword").value = "";
 
-    } catch (error) {
-      showMessage(
-        "loginMessage",
-        "No se pudo iniciar sesión: " + error.message,
-        true
-      );
+        } catch (error) {
+            showMessage(
+                "loginMessage",
+                "No se pudo iniciar sesión: " + error.message,
+                true
+            );
 
-    } finally {
-      button.disabled = false;
-      button.textContent = "Iniciar sesión";
+        } finally {
+            button.disabled = false;
+            button.textContent = "Iniciar sesión";
+        }
     }
-  }
 );
 
 // ========================================
@@ -397,36 +397,36 @@ $("loginForm").addEventListener(
 // ========================================
 
 $("logoutButton").addEventListener(
-  "click",
-  async () => {
-    if (!confirm("¿Quieres cerrar sesión?")) {
-      return;
+    "click",
+    async () => {
+        if (!confirm("¿Quieres cerrar sesión?")) {
+            return;
+        }
+
+        try {
+            const { error } =
+                await supabaseClient.auth.signOut();
+
+            if (error) {
+                throw error;
+            }
+
+            state = {
+                initialBalance: 0,
+                entries: {}
+            };
+
+            cloudSettingsExists = false;
+
+            showLogin();
+
+        } catch (error) {
+            cloudStatus(
+                "Error al cerrar sesión: " + error.message,
+                true
+            );
+        }
     }
-
-    try {
-      const { error } =
-        await supabaseClient.auth.signOut();
-
-      if (error) {
-        throw error;
-      }
-
-      state = {
-        initialBalance: 0,
-        entries: {}
-      };
-
-      cloudSettingsExists = false;
-
-      showLogin();
-
-    } catch (error) {
-      cloudStatus(
-        "Error al cerrar sesión: " + error.message,
-        true
-      );
-    }
-  }
 );
 
 // ========================================
@@ -434,27 +434,27 @@ $("logoutButton").addEventListener(
 // ========================================
 
 async function openAccount(user) {
-  cloudStatus(
-    "Cargando tus horas desde Supabase..."
-  );
+    cloudStatus(
+        "Cargando tus horas desde Supabase..."
+    );
 
-  try {
-    await loadCloudData(user.id);
+    try {
+        await loadCloudData(user.id);
 
-    currentUser = user;
+        currentUser = user;
 
-    showApplication();
-    renderAll();
+        showApplication();
+        renderAll();
 
-    cloudStatus("");
+        cloudStatus("");
 
-  } catch (error) {
-    currentUser = null;
+    } catch (error) {
+        currentUser = null;
 
-    showLogin();
+        showLogin();
 
-    throw error;
-  }
+        throw error;
+    }
 }
 
 // ========================================
@@ -462,61 +462,61 @@ async function openAccount(user) {
 // ========================================
 
 async function loadCloudData(userId) {
-  const entries = {};
-  const pageSize = 500;
+    const entries = {};
+    const pageSize = 500;
 
-  for (
-    let start = 0;
-    ;
-    start += pageSize
-  ) {
-    const { data, error } =
-      await supabaseClient
-        .from("registros_horarios")
-        .select("fecha,tipo,minutos,nota")
-        .eq("user_id", userId)
-        .order("fecha", {
-          ascending: true
-        })
-        .range(
-          start,
-          start + pageSize - 1
-        );
+    for (
+        let start = 0;
+        ;
+        start += pageSize
+    ) {
+        const { data, error } =
+            await supabaseClient
+                .from("registros_horarios")
+                .select("fecha,tipo,minutos,nota")
+                .eq("user_id", userId)
+                .order("fecha", {
+                    ascending: true
+                })
+                .range(
+                    start,
+                    start + pageSize - 1
+                );
 
-    if (error) {
-      throw error;
+        if (error) {
+            throw error;
+        }
+
+        for (const row of data) {
+            entries[row.fecha] = {
+                type: row.tipo,
+                minutes: row.minutos,
+                note: row.nota || ""
+            };
+        }
+
+        if (data.length < pageSize) {
+            break;
+        }
     }
 
-    for (const row of data) {
-      entries[row.fecha] = {
-        type: row.tipo,
-        minutes: row.minutos,
-        note: row.nota || ""
-      };
+    const { data: config, error: configError } =
+        await supabaseClient
+            .from("configuracion_horaria")
+            .select("saldo_inicial")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+    if (configError) {
+        throw configError;
     }
 
-    if (data.length < pageSize) {
-      break;
-    }
-  }
+    cloudSettingsExists = config !== null;
 
-  const { data: config, error: configError } =
-    await supabaseClient
-      .from("configuracion_horaria")
-      .select("saldo_inicial")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-  if (configError) {
-    throw configError;
-  }
-
-  cloudSettingsExists = config !== null;
-
-  state = {
-    initialBalance: config?.saldo_inicial ?? 0,
-    entries
-  };
+    state = {
+        initialBalance: config?.saldo_inicial ?? 0,
+        entries
+    };
 }
 
 // ========================================
@@ -524,31 +524,31 @@ async function loadCloudData(userId) {
 // ========================================
 
 async function saveCloudEntry(dateKey, entry) {
-  if (!currentUser) {
-    throw new Error(
-      "No hay sesión iniciada."
-    );
-  }
+    if (!currentUser) {
+        throw new Error(
+            "No hay sesión iniciada."
+        );
+    }
 
-  const { error } =
-    await supabaseClient
-      .from("registros_horarios")
-      .upsert(
-        {
-          user_id: currentUser.id,
-          fecha: dateKey,
-          tipo: entry.type,
-          minutos: entry.minutes,
-          nota: entry.note
-        },
-        {
-          onConflict: "user_id,fecha"
-        }
-      );
+    const { error } =
+        await supabaseClient
+            .from("registros_horarios")
+            .upsert(
+                {
+                    user_id: currentUser.id,
+                    fecha: dateKey,
+                    tipo: entry.type,
+                    minutos: entry.minutes,
+                    nota: entry.note
+                },
+                {
+                    onConflict: "user_id,fecha"
+                }
+            );
 
-  if (error) {
-    throw error;
-  }
+    if (error) {
+        throw error;
+    }
 }
 
 // ========================================
@@ -556,22 +556,22 @@ async function saveCloudEntry(dateKey, entry) {
 // ========================================
 
 async function deleteCloudEntry(dateKey) {
-  if (!currentUser) {
-    throw new Error(
-      "No hay sesión iniciada."
-    );
-  }
+    if (!currentUser) {
+        throw new Error(
+            "No hay sesión iniciada."
+        );
+    }
 
-  const { error } =
-    await supabaseClient
-      .from("registros_horarios")
-      .delete()
-      .eq("user_id", currentUser.id)
-      .eq("fecha", dateKey);
+    const { error } =
+        await supabaseClient
+            .from("registros_horarios")
+            .delete()
+            .eq("user_id", currentUser.id)
+            .eq("fecha", dateKey);
 
-  if (error) {
-    throw error;
-  }
+    if (error) {
+        throw error;
+    }
 }
 
 // ========================================
@@ -579,31 +579,31 @@ async function deleteCloudEntry(dateKey) {
 // ========================================
 
 async function saveCloudSettings(balance) {
-  if (!currentUser) {
-    throw new Error(
-      "No hay sesión iniciada."
-    );
-  }
+    if (!currentUser) {
+        throw new Error(
+            "No hay sesión iniciada."
+        );
+    }
 
-  const { error } =
-    await supabaseClient
-      .from("configuracion_horaria")
-      .upsert(
-        {
-          user_id: currentUser.id,
-          saldo_inicial: balance,
-          actualizado_en: new Date().toISOString()
-        },
-        {
-          onConflict: "user_id"
-        }
-      );
+    const { error } =
+        await supabaseClient
+            .from("configuracion_horaria")
+            .upsert(
+                {
+                    user_id: currentUser.id,
+                    saldo_inicial: balance,
+                    actualizado_en: new Date().toISOString()
+                },
+                {
+                    onConflict: "user_id"
+                }
+            );
 
-  if (error) {
-    throw error;
-  }
+    if (error) {
+        throw error;
+    }
 
-  cloudSettingsExists = true;
+    cloudSettingsExists = true;
 }
 
 // ========================================
@@ -611,35 +611,35 @@ async function saveCloudSettings(balance) {
 // ========================================
 
 function getEntry(key) {
-  return state.entries[key] || null;
+    return state.entries[key] || null;
 }
 
 function workedFor(key) {
-  const entry = getEntry(key);
+    const entry = getEntry(key);
 
-  if (!entry || entry.type !== "work") {
-    return 0;
-  }
+    if (!entry || entry.type !== "work") {
+        return 0;
+    }
 
-  return entry.minutes;
+    return entry.minutes;
 }
 
 function expectedFor(key) {
-  const entry = getEntry(key);
+    const entry = getEntry(key);
 
-  if (!entry || entry.type !== "work") {
-    return 0;
-  }
+    if (!entry || entry.type !== "work") {
+        return 0;
+    }
 
-  // Sábado y domingo: 0 horas obligatorias.
-  // De lunes a viernes: 8 horas.
-  return isWeekday(fromISO(key))
-    ? DAILY_MINUTES
-    : 0;
+    // Sábado y domingo: 0 horas obligatorias.
+    // De lunes a viernes: 8 horas.
+    return isWeekday(fromISO(key))
+        ? DAILY_MINUTES
+        : 0;
 }
 
 function dayBalance(key) {
-  return workedFor(key) - expectedFor(key);
+    return workedFor(key) - expectedFor(key);
 }
 
 // ========================================
@@ -647,57 +647,57 @@ function dayBalance(key) {
 // ========================================
 
 function getTotals(startKey, endKey) {
-  let worked = 0;
-  let expected = 0;
-  let registered = 0;
-  let pending = 0;
+    let worked = 0;
+    let expected = 0;
+    let registered = 0;
+    let pending = 0;
 
-  for (
-    let date = fromISO(startKey);
-    toISO(date) <= endKey;
-    date = addDays(date, 1)
-  ) {
-    const key = toISO(date);
-    const entry = getEntry(key);
-
-    if (entry) {
-      registered++;
-
-      worked += workedFor(key);
-      expected += expectedFor(key);
-
-    } else if (
-      isWeekday(date) &&
-      key <= todayISO()
+    for (
+        let date = fromISO(startKey);
+        toISO(date) <= endKey;
+        date = addDays(date, 1)
     ) {
-      pending++;
-    }
-  }
+        const key = toISO(date);
+        const entry = getEntry(key);
 
-  return {
-    worked,
-    expected,
-    registered,
-    pending,
-    balance: worked - expected
-  };
+        if (entry) {
+            registered++;
+
+            worked += workedFor(key);
+            expected += expectedFor(key);
+
+        } else if (
+            isWeekday(date) &&
+            key <= todayISO()
+        ) {
+            pending++;
+        }
+    }
+
+    return {
+        worked,
+        expected,
+        registered,
+        pending,
+        balance: worked - expected
+    };
 }
 
 function getMonthTotals(date) {
-  return getTotals(
-    toISO(monthStart(date)),
-    toISO(monthEnd(date))
-  );
+    return getTotals(
+        toISO(monthStart(date)),
+        toISO(monthEnd(date))
+    );
 }
 
 function getWeekTotals(date) {
-  const monday = mondayOf(date);
-  const sunday = addDays(monday, 6);
+    const monday = mondayOf(date);
+    const sunday = addDays(monday, 6);
 
-  return getTotals(
-    toISO(monday),
-    toISO(sunday)
-  );
+    return getTotals(
+        toISO(monday),
+        toISO(sunday)
+    );
 }
 
 // ========================================
@@ -705,15 +705,15 @@ function getWeekTotals(date) {
 // ========================================
 
 function getGlobalBalance() {
-  let balance = state.initialBalance;
+    let balance = state.initialBalance;
 
-  for (const key of Object.keys(state.entries)) {
-    if (key <= todayISO()) {
-      balance += dayBalance(key);
+    for (const key of Object.keys(state.entries)) {
+        if (key <= todayISO()) {
+            balance += dayBalance(key);
+        }
     }
-  }
 
-  return balance;
+    return balance;
 }
 
 // ========================================
@@ -721,19 +721,19 @@ function getGlobalBalance() {
 // ========================================
 
 function renderGlobalSummary() {
-  const balance = getGlobalBalance();
+    const balance = getGlobalBalance();
 
-  applyBalance(
-    $("totalBalance"),
-    balance
-  );
+    applyBalance(
+        $("totalBalance"),
+        balance
+    );
 
-  $("balanceDescription").textContent =
-    balance > 0
-      ? "La empresa te debe horas"
-      : balance < 0
-        ? "Tienes horas pendientes"
-        : "Estás al día";
+    $("balanceDescription").textContent =
+        balance > 0
+            ? "La empresa te debe horas"
+            : balance < 0
+                ? "Tienes horas pendientes"
+                : "Estás al día";
 }
 
 // ========================================
@@ -741,36 +741,36 @@ function renderGlobalSummary() {
 // ========================================
 
 function renderMonthSummary() {
-  const date = displayedMonth;
-  const totals = getMonthTotals(date);
+    const date = displayedMonth;
+    const totals = getMonthTotals(date);
 
-  $("monthTitle").textContent =
-    `${MONTHS[date.getMonth()]} ` +
-    `${date.getFullYear()}`;
+    $("monthTitle").textContent =
+        `${MONTHS[date.getMonth()]} ` +
+        `${date.getFullYear()}`;
 
-  $("monthWorked").textContent =
-    formatHours(totals.worked);
+    $("monthWorked").textContent =
+        formatHours(totals.worked);
 
-  $("monthExpected").textContent =
-    formatHours(totals.expected);
+    $("monthExpected").textContent =
+        formatHours(totals.expected);
 
-  applyBalance(
-    $("monthBalance"),
-    totals.balance
-  );
+    applyBalance(
+        $("monthBalance"),
+        totals.balance
+    );
 
-  $("monthBalanceText").textContent =
-    totals.balance > 0
-      ? "Horas a tu favor este mes"
-      : totals.balance < 0
-        ? "Horas que debes este mes"
-        : "Sin diferencias en los días registrados";
+    $("monthBalanceText").textContent =
+        totals.balance > 0
+            ? "Horas a tu favor este mes"
+            : totals.balance < 0
+                ? "Horas que debes este mes"
+                : "Sin diferencias en los días registrados";
 
-  $("monthDays").textContent =
-    `${totals.registered} días registrados`;
+    $("monthDays").textContent =
+        `${totals.registered} días registrados`;
 
-  $("monthPending").textContent =
-    `${totals.pending} laborables pendientes`;
+    $("monthPending").textContent =
+        `${totals.pending} laborables pendientes`;
 }
 
 // ========================================
@@ -778,33 +778,33 @@ function renderMonthSummary() {
 // ========================================
 
 function renderWeekSummary() {
-  const monday = selectedWeek;
-  const sunday = addDays(monday, 6);
+    const monday = selectedWeek;
+    const sunday = addDays(monday, 6);
 
-  const totals = getTotals(
-    toISO(monday),
-    toISO(sunday)
-  );
+    const totals = getTotals(
+        toISO(monday),
+        toISO(sunday)
+    );
 
-  $("weekRange").textContent =
-    `${shortDate(monday)} — ` +
-    `${shortDate(sunday)} ` +
-    `${sunday.getFullYear()}`;
+    $("weekRange").textContent =
+        `${shortDate(monday)} — ` +
+        `${shortDate(sunday)} ` +
+        `${sunday.getFullYear()}`;
 
-  $("weekWorked").textContent =
-    formatHours(totals.worked);
+    $("weekWorked").textContent =
+        formatHours(totals.worked);
 
-  $("weekExpected").textContent =
-    formatHours(totals.expected);
+    $("weekExpected").textContent =
+        formatHours(totals.expected);
 
-  applyBalance(
-    $("weekBalance"),
-    totals.balance
-  );
+    applyBalance(
+        $("weekBalance"),
+        totals.balance
+    );
 
-  $("weekPending").textContent =
-    `${totals.registered} días registrados · ` +
-    `${totals.pending} laborables pendientes`;
+    $("weekPending").textContent =
+        `${totals.registered} días registrados · ` +
+        `${totals.pending} laborables pendientes`;
 }
 
 // ========================================
@@ -812,87 +812,87 @@ function renderWeekSummary() {
 // ========================================
 
 function renderCalendar() {
-  const grid = $("calendarGrid");
+    const grid = $("calendarGrid");
 
-  grid.replaceChildren();
+    grid.replaceChildren();
 
-  const first = mondayOf(displayedMonth);
+    const first = mondayOf(displayedMonth);
 
-  for (let i = 0; i < 42; i++) {
-    const date = addDays(first, i);
-    const key = toISO(date);
-    const entry = getEntry(key);
+    for (let i = 0; i < 42; i++) {
+        const date = addDays(first, i);
+        const key = toISO(date);
+        const entry = getEntry(key);
 
-    const button = document.createElement("button");
+        const button = document.createElement("button");
 
-    button.type = "button";
-    button.className = "calendar-day";
+        button.type = "button";
+        button.className = "calendar-day";
 
-    if (
-      date.getMonth() !== displayedMonth.getMonth()
-    ) {
-      button.classList.add("other-month");
+        if (
+            date.getMonth() !== displayedMonth.getMonth()
+        ) {
+            button.classList.add("other-month");
+        }
+
+        if (!isWeekday(date)) {
+            button.classList.add("weekend");
+        }
+
+        if (key === todayISO()) {
+            button.classList.add("today");
+        }
+
+        if (key === selectedDate) {
+            button.classList.add("selected");
+        }
+
+        const number = document.createElement("span");
+        number.textContent = date.getDate();
+
+        const dot = document.createElement("span");
+        dot.className = "day-dot";
+
+        if (entry) {
+            dot.classList.add(
+                entry.type === "work"
+                    ? "green"
+                    : "yellow"
+            );
+
+        } else if (
+            isWeekday(date) &&
+            key <= todayISO()
+        ) {
+            dot.classList.add("red");
+        }
+
+        button.append(number, dot);
+
+        button.setAttribute(
+            "aria-label",
+            date.toLocaleDateString("es-ES") +
+            (
+                entry
+                    ? `, ${DAY_TYPES[entry.type]}`
+                    : ""
+            )
+        );
+
+        button.setAttribute(
+            "aria-pressed",
+            String(key === selectedDate)
+        );
+
+        button.addEventListener("click", () => {
+            selectedDate = key;
+            selectedWeek = mondayOf(date);
+            displayedMonth = monthStart(date);
+
+            renderAll();
+        });
+
+        grid.append(button);
     }
-
-    if (!isWeekday(date)) {
-      button.classList.add("weekend");
-    }
-
-    if (key === todayISO()) {
-      button.classList.add("today");
-    }
-
-    if (key === selectedDate) {
-      button.classList.add("selected");
-    }
-
-    const number = document.createElement("span");
-    number.textContent = date.getDate();
-
-    const dot = document.createElement("span");
-    dot.className = "day-dot";
-
-    if (entry) {
-      dot.classList.add(
-        entry.type === "work"
-          ? "green"
-          : "yellow"
-      );
-
-    } else if (
-      isWeekday(date) &&
-      key <= todayISO()
-    ) {
-      dot.classList.add("red");
-    }
-
-    button.append(number, dot);
-
-    button.setAttribute(
-      "aria-label",
-      date.toLocaleDateString("es-ES") +
-      (
-        entry
-          ? `, ${DAY_TYPES[entry.type]}`
-          : ""
-      )
-    );
-
-    button.setAttribute(
-      "aria-pressed",
-      String(key === selectedDate)
-    );
-
-    button.addEventListener("click", () => {
-      selectedDate = key;
-      selectedWeek = mondayOf(date);
-      displayedMonth = monthStart(date);
-
-      renderAll();
-    });
-
-    grid.append(button);
-  }
 }
 
 // ========================================
@@ -900,40 +900,40 @@ function renderCalendar() {
 // ========================================
 
 function renderEntryForm() {
-  const date = fromISO(selectedDate);
-  const entry = getEntry(selectedDate);
+    const date = fromISO(selectedDate);
+    const entry = getEntry(selectedDate);
 
-  const name = WEEKDAYS[date.getDay()];
+    const name = WEEKDAYS[date.getDay()];
 
-  $("selectedDayTitle").textContent =
-    name.charAt(0).toUpperCase() +
-    name.slice(1) +
-    `, ${date.getDate()} de ` +
-    MONTHS[date.getMonth()];
+    $("selectedDayTitle").textContent =
+        name.charAt(0).toUpperCase() +
+        name.slice(1) +
+        `, ${date.getDate()} de ` +
+        MONTHS[date.getMonth()];
 
-  $("dayType").value =
-    entry?.type || "work";
+    $("dayType").value =
+        entry?.type || "work";
 
-  $("hoursInput").value =
-    entry?.type === "work"
-      ? `${Math.floor(entry.minutes / 60)}:` +
-        `${pad(entry.minutes % 60)}`
-      : "";
+    $("hoursInput").value =
+        entry?.type === "work"
+            ? `${Math.floor(entry.minutes / 60)}:` +
+            `${pad(entry.minutes % 60)}`
+            : "";
 
-  $("noteInput").value =
-    entry?.note || "";
+    $("noteInput").value =
+        entry?.note || "";
 
-  $("entryMessage").textContent = "";
+    $("entryMessage").textContent = "";
 
-  updateTypeFields();
+    updateTypeFields();
 }
 
 function updateTypeFields() {
-  const work =
-    $("dayType").value === "work";
+    const work =
+        $("dayType").value === "work";
 
-  $("hoursContainer").hidden = !work;
-  $("freeDayInfo").hidden = work;
+    $("hoursContainer").hidden = !work;
+    $("freeDayInfo").hidden = work;
 }
 
 // ========================================
@@ -941,78 +941,78 @@ function updateTypeFields() {
 // ========================================
 
 function renderHistory() {
-  const list = $("historyList");
+    const list = $("historyList");
 
-  list.replaceChildren();
+    list.replaceChildren();
 
-  const first = toISO(
-    monthStart(displayedMonth)
-  );
-
-  const last = toISO(
-    monthEnd(displayedMonth)
-  );
-
-  const records = Object.entries(state.entries)
-    .filter(([key]) =>
-      key >= first && key <= last
-    )
-    .sort(([a], [b]) =>
-      b.localeCompare(a)
+    const first = toISO(
+        monthStart(displayedMonth)
     );
 
-  $("historyCount").textContent =
-    `${records.length} registros`;
+    const last = toISO(
+        monthEnd(displayedMonth)
+    );
 
-  if (records.length === 0) {
-    const empty = document.createElement("p");
+    const records = Object.entries(state.entries)
+        .filter(([key]) =>
+            key >= first && key <= last
+        )
+        .sort(([a], [b]) =>
+            b.localeCompare(a)
+        );
 
-    empty.className = "empty";
-    empty.textContent =
-      "No hay registros en este mes.";
+    $("historyCount").textContent =
+        `${records.length} registros`;
 
-    list.append(empty);
-    return;
-  }
+    if (records.length === 0) {
+        const empty = document.createElement("p");
 
-  for (const [key, entry] of records) {
-    const item = document.createElement("div");
-    item.className = "history-item";
+        empty.className = "empty";
+        empty.textContent =
+            "No hay registros en este mes.";
 
-    const date = document.createElement("div");
-    date.className = "history-date";
-    date.textContent = shortDate(fromISO(key));
+        list.append(empty);
+        return;
+    }
 
-    const info = document.createElement("div");
-    info.className = "history-info";
+    for (const [key, entry] of records) {
+        const item = document.createElement("div");
+        item.className = "history-item";
 
-    const title = document.createElement("strong");
+        const date = document.createElement("div");
+        date.className = "history-date";
+        date.textContent = shortDate(fromISO(key));
 
-    title.textContent =
-      entry.type === "work"
-        ? formatHours(entry.minutes)
-        : DAY_TYPES[entry.type];
+        const info = document.createElement("div");
+        info.className = "history-info";
 
-    const subtitle = document.createElement("small");
+        const title = document.createElement("strong");
 
-    subtitle.textContent =
-      entry.note || DAY_TYPES[entry.type];
+        title.textContent =
+            entry.type === "work"
+                ? formatHours(entry.minutes)
+                : DAY_TYPES[entry.type];
 
-    info.append(title, subtitle);
+        const subtitle = document.createElement("small");
 
-    const balance = document.createElement("strong");
+        subtitle.textContent =
+            entry.note || DAY_TYPES[entry.type];
 
-    balance.className =
-      "history-balance " +
-      balanceClass(dayBalance(key));
+        info.append(title, subtitle);
 
-    balance.textContent =
-      formatBalance(dayBalance(key));
+        const balance = document.createElement("strong");
 
-    item.append(date, info, balance);
+        balance.className =
+            "history-balance " +
+            balanceClass(dayBalance(key));
 
-    list.append(item);
-  }
+        balance.textContent =
+            formatBalance(dayBalance(key));
+
+        item.append(date, info, balance);
+
+        list.append(item);
+    }
 }
 
 // ========================================
@@ -1020,65 +1020,65 @@ function renderHistory() {
 // ========================================
 
 function renderYearSummary() {
-  const year = displayedMonth.getFullYear();
-  const tbody = $("yearTableBody");
+    const year = displayedMonth.getFullYear();
+    const tbody = $("yearTableBody");
 
-  tbody.replaceChildren();
+    tbody.replaceChildren();
 
-  $("yearTitle").textContent =
-    `Resumen anual ${year}`;
+    $("yearTitle").textContent =
+        `Resumen anual ${year}`;
 
-  let annualBalance = 0;
+    let annualBalance = 0;
 
-  for (let month = 0; month < 12; month++) {
-    const date = new Date(year, month, 1);
-    const totals = getMonthTotals(date);
+    for (let month = 0; month < 12; month++) {
+        const date = new Date(year, month, 1);
+        const totals = getMonthTotals(date);
 
-    annualBalance += totals.balance;
+        annualBalance += totals.balance;
 
-    const row = document.createElement("tr");
+        const row = document.createElement("tr");
 
-    if (month === displayedMonth.getMonth()) {
-      row.classList.add("active");
+        if (month === displayedMonth.getMonth()) {
+            row.classList.add("active");
+        }
+
+        const name = document.createElement("td");
+        name.className = "month-name";
+        name.textContent = MONTHS[month];
+
+        const worked = document.createElement("td");
+        worked.textContent = formatHours(totals.worked);
+
+        const delta = document.createElement("td");
+
+        delta.textContent =
+            formatBalance(totals.balance);
+
+        delta.className =
+            balanceClass(totals.balance);
+
+        row.append(name, worked, delta);
+
+        row.addEventListener("click", () => {
+            displayedMonth = date;
+            selectedDate = toISO(date);
+            selectedWeek = mondayOf(date);
+
+            renderAll();
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+
+        tbody.append(row);
     }
 
-    const name = document.createElement("td");
-    name.className = "month-name";
-    name.textContent = MONTHS[month];
-
-    const worked = document.createElement("td");
-    worked.textContent = formatHours(totals.worked);
-
-    const delta = document.createElement("td");
-
-    delta.textContent =
-      formatBalance(totals.balance);
-
-    delta.className =
-      balanceClass(totals.balance);
-
-    row.append(name, worked, delta);
-
-    row.addEventListener("click", () => {
-      displayedMonth = date;
-      selectedDate = toISO(date);
-      selectedWeek = mondayOf(date);
-
-      renderAll();
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    });
-
-    tbody.append(row);
-  }
-
-  applyBalance(
-    $("yearBalance"),
-    annualBalance
-  );
+    applyBalance(
+        $("yearBalance"),
+        annualBalance
+    );
 }
 
 // ========================================
@@ -1086,13 +1086,13 @@ function renderYearSummary() {
 // ========================================
 
 function renderAll() {
-  renderGlobalSummary();
-  renderMonthSummary();
-  renderWeekSummary();
-  renderCalendar();
-  renderEntryForm();
-  renderHistory();
-  renderYearSummary();
+    renderGlobalSummary();
+    renderMonthSummary();
+    renderWeekSummary();
+    renderCalendar();
+    renderEntryForm();
+    renderHistory();
+    renderYearSummary();
 }
 
 // ========================================
@@ -1100,98 +1100,98 @@ function renderAll() {
 // ========================================
 
 $("entryForm").addEventListener(
-  "submit",
-  async event => {
-    event.preventDefault();
+    "submit",
+    async event => {
+        event.preventDefault();
 
-    const type = $("dayType").value;
-    const note = $("noteInput").value.trim();
+        const type = $("dayType").value;
+        const note = $("noteInput").value.trim();
 
-    if (!Object.hasOwn(DAY_TYPES, type)) {
-      return;
+        if (!Object.hasOwn(DAY_TYPES, type)) {
+            return;
+        }
+
+        const minutes =
+            type === "work"
+                ? parseHours($("hoursInput").value)
+                : 0;
+
+        if (minutes === null) {
+            showMessage(
+                "entryMessage",
+                "Introduce horas válidas, por ejemplo 8:16.",
+                true
+            );
+
+            return;
+        }
+
+        if (note.length > 2000) {
+            showMessage(
+                "entryMessage",
+                "La observación es demasiado larga.",
+                true
+            );
+
+            return;
+        }
+
+        if (
+            selectedDate > todayISO() &&
+            type === "work"
+        ) {
+            showMessage(
+                "entryMessage",
+                "No puedes registrar horas futuras.",
+                true
+            );
+
+            return;
+        }
+
+        const key = selectedDate;
+
+        const entry = {
+            type,
+            minutes,
+            note
+        };
+
+        const button =
+            $("entryForm").querySelector(
+                '[type="submit"]'
+            );
+
+        button.disabled = true;
+
+        showMessage(
+            "entryMessage",
+            "Guardando en Supabase..."
+        );
+
+        try {
+            await saveCloudEntry(key, entry);
+
+            state.entries[key] = entry;
+
+            renderAll();
+
+            showMessage(
+                "entryMessage",
+                "Jornada guardada en Supabase."
+            );
+
+        } catch (error) {
+            showMessage(
+                "entryMessage",
+                "No se pudo guardar: " + error.message,
+                true
+            );
+
+        } finally {
+            button.disabled = false;
+        }
     }
-
-    const minutes =
-      type === "work"
-        ? parseHours($("hoursInput").value)
-        : 0;
-
-    if (minutes === null) {
-      showMessage(
-        "entryMessage",
-        "Introduce horas válidas, por ejemplo 8:16.",
-        true
-      );
-
-      return;
-    }
-
-    if (note.length > 2000) {
-      showMessage(
-        "entryMessage",
-        "La observación es demasiado larga.",
-        true
-      );
-
-      return;
-    }
-
-    if (
-      selectedDate > todayISO() &&
-      type === "work"
-    ) {
-      showMessage(
-        "entryMessage",
-        "No puedes registrar horas futuras.",
-        true
-      );
-
-      return;
-    }
-
-    const key = selectedDate;
-
-    const entry = {
-      type,
-      minutes,
-      note
-    };
-
-    const button =
-      $("entryForm").querySelector(
-        '[type="submit"]'
-      );
-
-    button.disabled = true;
-
-    showMessage(
-      "entryMessage",
-      "Guardando en Supabase..."
-    );
-
-    try {
-      await saveCloudEntry(key, entry);
-
-      state.entries[key] = entry;
-
-      renderAll();
-
-      showMessage(
-        "entryMessage",
-        "Jornada guardada en Supabase."
-      );
-
-    } catch (error) {
-      showMessage(
-        "entryMessage",
-        "No se pudo guardar: " + error.message,
-        true
-      );
-
-    } finally {
-      button.disabled = false;
-    }
-  }
 );
 
 // ========================================
@@ -1199,55 +1199,55 @@ $("entryForm").addEventListener(
 // ========================================
 
 $("deleteEntry").addEventListener(
-  "click",
-  async () => {
-    const key = selectedDate;
+    "click",
+    async () => {
+        const key = selectedDate;
 
-    if (!getEntry(key)) {
-      showMessage(
-        "entryMessage",
-        "Este día no tiene registro.",
-        true
-      );
+        if (!getEntry(key)) {
+            showMessage(
+                "entryMessage",
+                "Este día no tiene registro.",
+                true
+            );
 
-      return;
+            return;
+        }
+
+        if (
+            !confirm(
+                "¿Eliminar este registro de Supabase?"
+            )
+        ) {
+            return;
+        }
+
+        const button = $("deleteEntry");
+
+        button.disabled = true;
+
+        try {
+            await deleteCloudEntry(key);
+
+            delete state.entries[key];
+
+            renderAll();
+
+            showMessage(
+                "entryMessage",
+                "Registro eliminado correctamente."
+            );
+
+        } catch (error) {
+            showMessage(
+                "entryMessage",
+                "Error al eliminar: " + error.message,
+                true
+            );
+
+        } finally {
+            button.disabled = false;
+        }
     }
-
-    if (
-      !confirm(
-        "¿Eliminar este registro de Supabase?"
-      )
-    ) {
-      return;
-    }
-
-    const button = $("deleteEntry");
-
-    button.disabled = true;
-
-    try {
-      await deleteCloudEntry(key);
-
-      delete state.entries[key];
-
-      renderAll();
-
-      showMessage(
-        "entryMessage",
-        "Registro eliminado correctamente."
-      );
-
-    } catch (error) {
-      showMessage(
-        "entryMessage",
-        "Error al eliminar: " + error.message,
-        true
-      );
-
-    } finally {
-      button.disabled = false;
-    }
-  }
 );
 
 // ========================================
@@ -1255,8 +1255,8 @@ $("deleteEntry").addEventListener(
 // ========================================
 
 $("dayType").addEventListener(
-  "change",
-  updateTypeFields
+    "change",
+    updateTypeFields
 );
 
 // ========================================
@@ -1264,33 +1264,33 @@ $("dayType").addEventListener(
 // ========================================
 
 $("prevWeek").addEventListener(
-  "click",
-  () => {
-    selectedWeek = addDays(
-      selectedWeek,
-      -7
-    );
+    "click",
+    () => {
+        selectedWeek = addDays(
+            selectedWeek,
+            -7
+        );
 
-    displayedMonth = monthStart(selectedWeek);
-    selectedDate = toISO(selectedWeek);
+        displayedMonth = monthStart(selectedWeek);
+        selectedDate = toISO(selectedWeek);
 
-    renderAll();
-  }
+        renderAll();
+    }
 );
 
 $("nextWeek").addEventListener(
-  "click",
-  () => {
-    selectedWeek = addDays(
-      selectedWeek,
-      7
-    );
+    "click",
+    () => {
+        selectedWeek = addDays(
+            selectedWeek,
+            7
+        );
 
-    displayedMonth = monthStart(selectedWeek);
-    selectedDate = toISO(selectedWeek);
+        displayedMonth = monthStart(selectedWeek);
+        selectedDate = toISO(selectedWeek);
 
-    renderAll();
-  }
+        renderAll();
+    }
 );
 
 // ========================================
@@ -1298,26 +1298,26 @@ $("nextWeek").addEventListener(
 // ========================================
 
 function changeMonth(offset) {
-  displayedMonth = new Date(
-    displayedMonth.getFullYear(),
-    displayedMonth.getMonth() + offset,
-    1
-  );
+    displayedMonth = new Date(
+        displayedMonth.getFullYear(),
+        displayedMonth.getMonth() + offset,
+        1
+    );
 
-  selectedDate = toISO(displayedMonth);
-  selectedWeek = mondayOf(displayedMonth);
+    selectedDate = toISO(displayedMonth);
+    selectedWeek = mondayOf(displayedMonth);
 
-  renderAll();
+    renderAll();
 }
 
 $("prevMonth").addEventListener(
-  "click",
-  () => changeMonth(-1)
+    "click",
+    () => changeMonth(-1)
 );
 
 $("nextMonth").addEventListener(
-  "click",
-  () => changeMonth(1)
+    "click",
+    () => changeMonth(1)
 );
 
 // ========================================
@@ -1325,14 +1325,14 @@ $("nextMonth").addEventListener(
 // ========================================
 
 $("todayButton").addEventListener(
-  "click",
-  () => {
-    selectedDate = todayISO();
-    selectedWeek = mondayOf(new Date());
-    displayedMonth = monthStart(new Date());
+    "click",
+    () => {
+        selectedDate = todayISO();
+        selectedWeek = mondayOf(new Date());
+        displayedMonth = monthStart(new Date());
 
-    renderAll();
-  }
+        renderAll();
+    }
 );
 
 // ========================================
@@ -1340,15 +1340,15 @@ $("todayButton").addEventListener(
 // ========================================
 
 $("settingsButton").addEventListener(
-  "click",
-  () => {
-    $("initialBalance").value =
-      state.initialBalance;
+    "click",
+    () => {
+        $("initialBalance").value =
+            state.initialBalance;
 
-    $("settingsMessage").textContent = "";
+        $("settingsMessage").textContent = "";
 
-    $("settingsDialog").showModal();
-  }
+        $("settingsDialog").showModal();
+    }
 );
 
 // ========================================
@@ -1356,10 +1356,10 @@ $("settingsButton").addEventListener(
 // ========================================
 
 $("closeSettings").addEventListener(
-  "click",
-  () => {
-    $("settingsDialog").close();
-  }
+    "click",
+    () => {
+        $("settingsDialog").close();
+    }
 );
 
 // ========================================
@@ -1367,51 +1367,51 @@ $("closeSettings").addEventListener(
 // ========================================
 
 $("saveSettings").addEventListener(
-  "click",
-  async () => {
-    const input = $("initialBalance").value;
-    const balance = Number(input);
+    "click",
+    async () => {
+        const input = $("initialBalance").value;
+        const balance = Number(input);
 
-    if (
-      input.trim() === "" ||
-      !Number.isSafeInteger(balance) ||
-      Math.abs(balance) > 10000000
-    ) {
-      showMessage(
-        "settingsMessage",
-        "Introduce un saldo válido en minutos.",
-        true
-      );
+        if (
+            input.trim() === "" ||
+            !Number.isSafeInteger(balance) ||
+            Math.abs(balance) > 10000000
+        ) {
+            showMessage(
+                "settingsMessage",
+                "Introduce un saldo válido en minutos.",
+                true
+            );
 
-      return;
+            return;
+        }
+
+        const button = $("saveSettings");
+        button.disabled = true;
+
+        try {
+            await saveCloudSettings(balance);
+
+            state.initialBalance = balance;
+
+            renderAll();
+
+            showMessage(
+                "settingsMessage",
+                "Saldo inicial guardado en Supabase."
+            );
+
+        } catch (error) {
+            showMessage(
+                "settingsMessage",
+                "Error al guardar: " + error.message,
+                true
+            );
+
+        } finally {
+            button.disabled = false;
+        }
     }
-
-    const button = $("saveSettings");
-    button.disabled = true;
-
-    try {
-      await saveCloudSettings(balance);
-
-      state.initialBalance = balance;
-
-      renderAll();
-
-      showMessage(
-        "settingsMessage",
-        "Saldo inicial guardado en Supabase."
-      );
-
-    } catch (error) {
-      showMessage(
-        "settingsMessage",
-        "Error al guardar: " + error.message,
-        true
-      );
-
-    } finally {
-      button.disabled = false;
-    }
-  }
 );
 
 // ========================================
@@ -1419,33 +1419,33 @@ $("saveSettings").addEventListener(
 // ========================================
 
 $("exportButton").addEventListener(
-  "click",
-  () => {
-    const blob = new Blob(
-      [JSON.stringify(state, null, 2)],
-      {
-        type: "application/json"
-      }
-    );
+    "click",
+    () => {
+        const blob = new Blob(
+            [JSON.stringify(state, null, 2)],
+            {
+                type: "application/json"
+            }
+        );
 
-    const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
+        const link = document.createElement("a");
 
-    link.href = url;
-    link.download =
-      `control-horario-${todayISO()}.json`;
+        link.href = url;
+        link.download =
+            `control-horario-${todayISO()}.json`;
 
-    document.body.append(link);
+        document.body.append(link);
 
-    link.click();
-    link.remove();
+        link.click();
+        link.remove();
 
-    setTimeout(
-      () => URL.revokeObjectURL(url),
-      1000
-    );
-  }
+        setTimeout(
+            () => URL.revokeObjectURL(url),
+            1000
+        );
+    }
 );
 
 // ========================================
@@ -1455,67 +1455,67 @@ $("exportButton").addEventListener(
 // Las fechas existentes no se sobrescriben.
 
 async function mergeBackup(backup) {
-  if (!currentUser) {
-    throw new Error(
-      "Debes iniciar sesión."
-    );
-  }
-
-  if (!validBackup(backup)) {
-    throw new Error(
-      "Copia de seguridad no válida."
-    );
-  }
-
-  await loadCloudData(currentUser.id);
-
-  const missing = Object.entries(backup.entries)
-    .filter(
-      ([key]) =>
-        !Object.hasOwn(state.entries, key)
-    );
-
-  for (
-    let i = 0;
-    i < missing.length;
-    i += 100
-  ) {
-    const batch = missing
-      .slice(i, i + 100)
-      .map(
-        ([key, entry]) => ({
-          user_id: currentUser.id,
-          fecha: key,
-          tipo: entry.type,
-          minutos: entry.minutes,
-          nota: entry.note
-        })
-      );
-
-    const { error } =
-      await supabaseClient
-        .from("registros_horarios")
-        .upsert(batch, {
-          onConflict: "user_id,fecha",
-          ignoreDuplicates: true
-        });
-
-    if (error) {
-      throw error;
+    if (!currentUser) {
+        throw new Error(
+            "Debes iniciar sesión."
+        );
     }
-  }
 
-  if (!cloudSettingsExists) {
-    await saveCloudSettings(
-      backup.initialBalance
-    );
-  }
+    if (!validBackup(backup)) {
+        throw new Error(
+            "Copia de seguridad no válida."
+        );
+    }
 
-  await loadCloudData(currentUser.id);
+    await loadCloudData(currentUser.id);
 
-  renderAll();
+    const missing = Object.entries(backup.entries)
+        .filter(
+            ([key]) =>
+                !Object.hasOwn(state.entries, key)
+        );
 
-  return missing.length;
+    for (
+        let i = 0;
+        i < missing.length;
+        i += 100
+    ) {
+        const batch = missing
+            .slice(i, i + 100)
+            .map(
+                ([key, entry]) => ({
+                    user_id: currentUser.id,
+                    fecha: key,
+                    tipo: entry.type,
+                    minutos: entry.minutes,
+                    nota: entry.note
+                })
+            );
+
+        const { error } =
+            await supabaseClient
+                .from("registros_horarios")
+                .upsert(batch, {
+                    onConflict: "user_id,fecha",
+                    ignoreDuplicates: true
+                });
+
+        if (error) {
+            throw error;
+        }
+    }
+
+    if (!cloudSettingsExists) {
+        await saveCloudSettings(
+            backup.initialBalance
+        );
+    }
+
+    await loadCloudData(currentUser.id);
+
+    renderAll();
+
+    return missing.length;
 }
 
 // ========================================
@@ -1523,65 +1523,65 @@ async function mergeBackup(backup) {
 // ========================================
 
 $("importButton").addEventListener(
-  "click",
-  () => {
-    $("importFile").click();
-  }
+    "click",
+    () => {
+        $("importFile").click();
+    }
 );
 
 $("importFile").addEventListener(
-  "change",
-  async event => {
-    const file = event.target.files?.[0];
+    "change",
+    async event => {
+        const file = event.target.files?.[0];
 
-    if (!file) {
-      return;
+        if (!file) {
+            return;
+        }
+
+        try {
+            const backup = JSON.parse(
+                await file.text()
+            );
+
+            if (!validBackup(backup)) {
+                throw new Error(
+                    "El archivo JSON no es válido."
+                );
+            }
+
+            const confirmation = confirm(
+                "Se importarán las fechas que falten " +
+                "en Supabase. Los registros existentes " +
+                "se conservarán. ¿Continuar?"
+            );
+
+            if (!confirmation) {
+                return;
+            }
+
+            showMessage(
+                "settingsMessage",
+                "Importando registros..."
+            );
+
+            const count = await mergeBackup(backup);
+
+            showMessage(
+                "settingsMessage",
+                `${count} registros importados correctamente.`
+            );
+
+        } catch (error) {
+            showMessage(
+                "settingsMessage",
+                "Error al importar: " + error.message,
+                true
+            );
+
+        } finally {
+            event.target.value = "";
+        }
     }
-
-    try {
-      const backup = JSON.parse(
-        await file.text()
-      );
-
-      if (!validBackup(backup)) {
-        throw new Error(
-          "El archivo JSON no es válido."
-        );
-      }
-
-      const confirmation = confirm(
-        "Se importarán las fechas que falten " +
-        "en Supabase. Los registros existentes " +
-        "se conservarán. ¿Continuar?"
-      );
-
-      if (!confirmation) {
-        return;
-      }
-
-      showMessage(
-        "settingsMessage",
-        "Importando registros..."
-      );
-
-      const count = await mergeBackup(backup);
-
-      showMessage(
-        "settingsMessage",
-        `${count} registros importados correctamente.`
-      );
-
-    } catch (error) {
-      showMessage(
-        "settingsMessage",
-        "Error al importar: " + error.message,
-        true
-      );
-
-    } finally {
-      event.target.value = "";
-    }
-  }
 );
 
 // ========================================
@@ -1589,50 +1589,50 @@ $("importFile").addEventListener(
 // ========================================
 
 $("migrateButton").addEventListener(
-  "click",
-  async () => {
-    const backup = readPreviousLocalData();
+    "click",
+    async () => {
+        const backup = readPreviousLocalData();
 
-    if (!backup) {
-      showMessage(
-        "settingsMessage",
-        "No se encontraron registros locales válidos.",
-        true
-      );
+        if (!backup) {
+            showMessage(
+                "settingsMessage",
+                "No se encontraron registros locales válidos.",
+                true
+            );
 
-      return;
+            return;
+        }
+
+        const confirmation = confirm(
+            "¿Importar las antiguas horas locales " +
+            "sin sobrescribir los registros actuales?"
+        );
+
+        if (!confirmation) {
+            return;
+        }
+
+        try {
+            showMessage(
+                "settingsMessage",
+                "Migrando tus horas anteriores..."
+            );
+
+            const count = await mergeBackup(backup);
+
+            showMessage(
+                "settingsMessage",
+                `${count} registros antiguos incorporados.`
+            );
+
+        } catch (error) {
+            showMessage(
+                "settingsMessage",
+                "Error al migrar: " + error.message,
+                true
+            );
+        }
     }
-
-    const confirmation = confirm(
-      "¿Importar las antiguas horas locales " +
-      "sin sobrescribir los registros actuales?"
-    );
-
-    if (!confirmation) {
-      return;
-    }
-
-    try {
-      showMessage(
-        "settingsMessage",
-        "Migrando tus horas anteriores..."
-      );
-
-      const count = await mergeBackup(backup);
-
-      showMessage(
-        "settingsMessage",
-        `${count} registros antiguos incorporados.`
-      );
-
-    } catch (error) {
-      showMessage(
-        "settingsMessage",
-        "Error al migrar: " + error.message,
-        true
-      );
-    }
-  }
 );
 
 // ========================================
@@ -1643,35 +1643,35 @@ $("migrateButton").addEventListener(
 // los últimos registros de Supabase.
 
 document.addEventListener(
-  "visibilitychange",
-  async () => {
-    if (
-      document.visibilityState !== "visible" ||
-      !currentUser ||
-      loadingData
-    ) {
-      return;
+    "visibilitychange",
+    async () => {
+        if (
+            document.visibilityState !== "visible" ||
+            !currentUser ||
+            loadingData
+        ) {
+            return;
+        }
+
+        loadingData = true;
+
+        try {
+            await loadCloudData(currentUser.id);
+
+            renderAll();
+            cloudStatus("");
+
+        } catch (error) {
+            cloudStatus(
+                "No se pudieron actualizar los datos: " +
+                error.message,
+                true
+            );
+
+        } finally {
+            loadingData = false;
+        }
     }
-
-    loadingData = true;
-
-    try {
-      await loadCloudData(currentUser.id);
-
-      renderAll();
-      cloudStatus("");
-
-    } catch (error) {
-      cloudStatus(
-        "No se pudieron actualizar los datos: " +
-        error.message,
-        true
-      );
-
-    } finally {
-      loadingData = false;
-    }
-  }
 );
 
 // ========================================
@@ -1679,36 +1679,36 @@ document.addEventListener(
 // ========================================
 
 async function init() {
-  $("loginScreen").hidden = true;
-  $("appMain").hidden = true;
+    $("loginScreen").hidden = true;
+    $("appMain").hidden = true;
 
-  $("logoutButton").hidden = true;
-  $("settingsButton").hidden = true;
+    $("logoutButton").hidden = true;
+    $("settingsButton").hidden = true;
 
-  loadRememberedEmail();
+    loadRememberedEmail();
 
-  cloudStatus("Comprobando sesión...");
+    cloudStatus("Comprobando sesión...");
 
-  try {
-    const { data, error } =
-      await supabaseClient.auth.getUser();
+    try {
+        const { data, error } =
+            await supabaseClient.auth.getUser();
 
-    if (error || !data.user) {
-      showLogin();
-      return;
+        if (error || !data.user) {
+            showLogin();
+            return;
+        }
+
+        await openAccount(data.user);
+
+    } catch (error) {
+        showLogin();
+
+        showMessage(
+            "loginMessage",
+            "Error de conexión: " + error.message,
+            true
+        );
     }
-
-    await openAccount(data.user);
-
-  } catch (error) {
-    showLogin();
-
-    showMessage(
-      "loginMessage",
-      "Error de conexión: " + error.message,
-      true
-    );
-  }
 }
 
 // ========================================
