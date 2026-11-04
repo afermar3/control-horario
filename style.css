@@ -1,7 +1,12 @@
 
+/* ========================================
+   CONFIGURACIÓN GENERAL
+   ======================================== */
+
 :root {
   font-family: Inter, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
+
   color: #edf2ff;
   background: #0b1222;
   -webkit-font-smoothing: antialiased;
@@ -17,7 +22,10 @@ body {
   background: #0b1222;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -33,47 +41,15 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .app {
   width: 100%;
   max-width: 1050px;
   margin: 0 auto;
   padding: 24px 20px 60px;
-}
-
-/* CABECERA */
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 25px;
-  gap: 12px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.brand-icon {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  background: #28448f;
-  border-radius: 14px;
-  color: #c9d6ff;
-  font-size: 28px;
-}
-
-.eyebrow {
-  display: block;
-  margin-bottom: 5px;
-  color: #8799bc;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.25px;
 }
 
 h1, h2, h3, p {
@@ -94,30 +70,94 @@ h3 {
   font-size: 16px;
 }
 
+/* ========================================
+   CABECERA
+   ======================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.brand-icon {
+  display: grid;
+  place-items: center;
+
+  width: 46px;
+  height: 46px;
+
+  background: #28448f;
+  border-radius: 14px;
+  color: #c9d6ff;
+  font-size: 28px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #8799bc;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.25px;
+}
+
 .icon-btn {
-  border: 1px solid #34435e;
-  border-radius: 12px;
+  display: grid;
+  place-items: center;
+
   width: 42px;
   height: 42px;
+
+  border: 1px solid #34435e;
+  border-radius: 12px;
+
   color: #eaf0ff;
   background: #1c2a43;
   font-size: 21px;
 }
 
-/* SALDO GLOBAL */
+.icon-btn:hover {
+  background: #293c5a;
+}
+
+/* ========================================
+   SALDO GLOBAL
+   ======================================== */
 
 .hero {
-  background: linear-gradient(120deg, #2850b8, #142960);
-  border-radius: 21px;
   padding: 26px;
   margin-bottom: 18px;
+
+  background: linear-gradient(
+    120deg,
+    #2850b8,
+    #142960
+  );
+
+  border-radius: 21px;
   box-shadow: 0 15px 35px #0002;
 }
 
 .hero-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 10px;
 }
 
@@ -128,9 +168,9 @@ h3 {
 }
 
 .hero h2 {
+  margin-bottom: 8px;
   font-size: clamp(29px, 5vw, 43px);
   letter-spacing: -1px;
-  margin-bottom: 8px;
 }
 
 .hero-header p:last-child {
@@ -147,19 +187,23 @@ h3 {
 .hero-footer {
   margin-top: 24px;
   padding-top: 16px;
+
   border-top: 1px solid #ffffff2f;
   color: #bdcfff;
   font-size: 12px;
 }
 
-/* PANELES */
+/* ========================================
+   PANELES
+   ======================================== */
 
 .panel {
+  padding: 23px;
+  margin-bottom: 17px;
+
   background: #151f33;
   border: 1px solid #293650;
   border-radius: 20px;
-  margin-bottom: 17px;
-  padding: 23px;
 }
 
 .section-header {
@@ -171,9 +215,13 @@ h3 {
 }
 
 .small-muted {
-  font-size: 12px;
   color: #91a3c2;
+  font-size: 12px;
 }
+
+/* ========================================
+   NAVEGACIÓN MENSUAL
+   ======================================== */
 
 .month-navigation {
   display: flex;
@@ -184,23 +232,33 @@ h3 {
 .month-navigation button {
   width: 31px;
   height: 34px;
-  border-radius: 9px;
+
   border: 1px solid #3b4c6b;
+  border-radius: 9px;
+
   background: #23334f;
   color: #e7eeff;
   font-size: 23px;
 }
 
+.month-navigation button:hover {
+  background: #344b74;
+}
+
 .month-navigation span {
   min-width: 119px;
+
   text-align: center;
   text-transform: capitalize;
+
   font-size: 12px;
   font-weight: 700;
   color: #d5e1fa;
 }
 
-/* ESTADÍSTICAS */
+/* ========================================
+   TARJETAS DE ESTADÍSTICAS
+   ======================================== */
 
 .stats-grid {
   display: grid;
@@ -209,16 +267,17 @@ h3 {
 }
 
 .stat-box {
+  padding: 17px;
   background: #1b2940;
   border-radius: 13px;
-  padding: 17px;
 }
 
 .stat-label {
   display: block;
+  margin-bottom: 12px;
+
   color: #a3b1cd;
   font-size: 12px;
-  margin-bottom: 12px;
 }
 
 .stat-box strong {
@@ -229,6 +288,7 @@ h3 {
 .stat-box small {
   display: block;
   margin-top: 8px;
+
   color: #8296b7;
   font-size: 11px;
 }
@@ -237,8 +297,10 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 7px;
+
   padding: 19px;
   margin-top: 12px;
+
   border: 1px solid #334b70;
   border-radius: 13px;
   background: #202e49;
@@ -263,10 +325,15 @@ h3 {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 8px;
+
   margin-top: 15px;
   color: #91a3c3;
   font-size: 12px;
 }
+
+/* ========================================
+   COLORES DEL SALDO
+   ======================================== */
 
 .positive {
   color: #74e3b1 !important;
@@ -280,13 +347,58 @@ h3 {
   color: #e3ebfc !important;
 }
 
-/* RESUMEN SEMANAL */
+/* ========================================
+   CONTADOR SEMANAL
+   ======================================== */
+
+.week-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 10px;
+  margin-bottom: 18px;
+
+  border-radius: 12px;
+  background: #1b2940;
+}
+
+.week-nav-btn {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 38px;
+
+  border: 1px solid #3b4c6b;
+  border-radius: 10px;
+
+  background: #253653;
+  color: #eaf0ff;
+  font-size: 25px;
+}
+
+.week-nav-btn:hover {
+  background: #35517f;
+}
+
+.week-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .week-range {
-  margin-bottom: 17px;
-  font-size: 13px;
-  color: #a8b9d6;
+  margin: 0;
+  flex: 1;
+
+  text-align: center;
   text-transform: capitalize;
+
+  color: #dce6fc;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .inline-balance {
@@ -294,8 +406,10 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+
   margin-top: 14px;
   padding: 15px 17px;
+
   background: #202f48;
   border-radius: 12px;
   font-size: 13px;
@@ -306,14 +420,19 @@ h3 {
 }
 
 .text-btn {
-  border: 0;
+  padding: 7px 0;
+  border: none;
+
   background: transparent;
   color: #a0baff;
-  font-weight: 700;
+
   font-size: 12px;
+  font-weight: 700;
 }
 
-/* CALENDARIO */
+/* ========================================
+   CALENDARIO
+   ======================================== */
 
 .weekdays,
 .calendar-grid {
@@ -327,26 +446,36 @@ h3 {
 }
 
 .weekdays span {
-  text-align: center;
   padding: 8px 0;
+
+  text-align: center;
   color: #8397b9;
+
   font-size: 12px;
   font-weight: 800;
 }
 
 .calendar-day {
-  min-height: 58px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 7px;
+
+  min-height: 58px;
+
   background: #1c2a41;
   color: #edf2ff;
+
   border: 1px solid transparent;
   border-radius: 12px;
+
   font-size: 14px;
   font-weight: 700;
+}
+
+.calendar-day:hover {
+  background: #2b3e5d;
 }
 
 .calendar-day.weekend {
@@ -355,7 +484,7 @@ h3 {
 }
 
 .calendar-day.other-month {
-  opacity: .35;
+  opacity: 0.35;
 }
 
 .calendar-day.today {
@@ -390,7 +519,9 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+
   margin-top: 20px;
+
   color: #a0afca;
   font-size: 11px;
 }
@@ -407,25 +538,32 @@ h3 {
   border-radius: 50%;
 }
 
-/* FORMULARIOS */
+/* ========================================
+   FORMULARIOS
+   ======================================== */
 
 label {
   display: block;
   margin: 17px 0 9px;
+
   font-size: 13px;
   font-weight: 700;
   color: #e1e9fb;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   display: block;
   width: 100%;
   min-height: 45px;
   padding: 13px 15px;
+
   background: #10192b;
   border: 1px solid #3a4b69;
-  color: #eef3ff;
   border-radius: 11px;
+
+  color: #eef3ff;
   font-size: 15px;
 }
 
@@ -439,10 +577,11 @@ textarea::placeholder {
 }
 
 .helper {
+  margin: 10px 0;
+
   color: #98aac8;
   font-size: 12px;
   line-height: 1.6;
-  margin: 10px 0;
 }
 
 .form-buttons {
@@ -455,10 +594,12 @@ textarea::placeholder {
 .btn-secondary {
   padding: 14px 16px;
   border-radius: 11px;
-  border: 0;
-  font-weight: 750;
+  border: none;
+
   font-size: 13px;
-  transition: background .2s ease;
+  font-weight: 750;
+
+  transition: background 0.2s ease;
 }
 
 .btn-primary {
@@ -479,25 +620,36 @@ textarea::placeholder {
   background: #354866;
 }
 
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .form-buttons button {
   flex: 1;
 }
 
+.full-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+
 .message {
   margin: 12px 0 0;
+
   color: #74e3b1;
   font-size: 12px;
+  line-height: 1.5;
 }
 
 .message.error {
   color: #ff9999;
 }
 
-[hidden] {
-  display: none !important;
-}
-
-/* MOVIMIENTOS */
+/* ========================================
+   MOVIMIENTOS
+   ======================================== */
 
 .history-list {
   display: flex;
@@ -509,16 +661,18 @@ textarea::placeholder {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #1c2b43;
-  border-radius: 13px;
+
   padding: 15px;
+  border-radius: 13px;
+  background: #1c2b43;
 }
 
 .history-date {
   min-width: 51px;
+
   color: #acc0e9;
-  font-weight: 750;
   font-size: 12px;
+  font-weight: 750;
 }
 
 .history-info {
@@ -534,25 +688,29 @@ textarea::placeholder {
 .history-info small {
   display: block;
   margin-top: 5px;
+
   color: #9cafcd;
   font-size: 11px;
   overflow-wrap: anywhere;
 }
 
 .history-balance {
+  white-space: nowrap;
   font-size: 12px;
   font-weight: 800;
-  white-space: nowrap;
 }
 
 .empty {
-  text-align: center;
   padding: 25px 12px;
+
+  text-align: center;
   color: #a1afc9;
   font-size: 13px;
 }
 
-/* RESUMEN ANUAL */
+/* ========================================
+   HISTORIAL ANUAL
+   ======================================== */
 
 .table-wrapper {
   overflow-x: auto;
@@ -566,14 +724,17 @@ textarea::placeholder {
 
 .year-table th {
   padding: 13px 12px;
+
   color: #90a2c1;
   font-size: 11px;
   font-weight: 750;
+
   border-bottom: 1px solid #34425b;
 }
 
 .year-table td {
   padding: 13px 12px;
+
   border-bottom: 1px solid #273750;
   font-size: 13px;
 }
@@ -604,23 +765,138 @@ textarea::placeholder {
   margin-top: 18px;
 }
 
-footer {
-  text-align: center;
-  color: #7f91ad;
-  font-size: 12px;
-  line-height: 1.6;
-  padding: 20px 10px;
+/* ========================================
+   INICIO DE SESIÓN
+   ======================================== */
+
+.login-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 65vh;
+  padding: 20px 0;
 }
 
-/* CONFIGURACIÓN */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+
+  background: #151f33;
+  border: 1px solid #293650;
+  border-radius: 22px;
+
+  box-shadow: 0 18px 45px #0003;
+}
+
+.login-symbol {
+  display: grid;
+  place-items: center;
+
+  width: 58px;
+  height: 58px;
+  margin-bottom: 20px;
+
+  border-radius: 17px;
+  background: #28448f;
+
+  color: #d7e2ff;
+  font-size: 36px;
+}
+
+.login-card h2 {
+  margin-bottom: 9px;
+  font-size: 26px;
+}
+
+.login-card > p {
+  color: #a2b2d0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.login-card label {
+  margin-top: 20px;
+}
+
+.login-card .btn-primary {
+  margin-top: 25px;
+}
+
+/* ========================================
+   RECORDAR CORREO
+   ======================================== */
+
+.remember-container {
+  margin-top: 18px;
+}
+
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin: 0 !important;
+  cursor: pointer;
+
+  color: #b8c7e2;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.remember-label input {
+  width: 17px;
+  height: 17px;
+  min-height: auto;
+
+  padding: 0;
+  margin: 0;
+
+  accent-color: #547df0;
+  cursor: pointer;
+}
+
+/* ========================================
+   ESTADO DE LA NUBE
+   ======================================== */
+
+.cloud-status {
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+
+  margin-bottom: 15px;
+  padding: 12px 16px;
+
+  border-radius: 12px;
+  background: #213b57;
+  border: 1px solid #41658c;
+
+  color: #d6e8ff;
+  font-size: 13px;
+}
+
+.cloud-status.error {
+  background: #49303d;
+  border-color: #8a4d59;
+  color: #ffd4d4;
+}
+
+/* ========================================
+   CONFIGURACIÓN
+   ======================================== */
 
 .settings-dialog {
   width: min(95vw, 500px);
   max-height: 90vh;
   padding: 0;
+
   overflow-y: auto;
+
   border: 1px solid #3c4b68;
   border-radius: 18px;
+
   background: #172239;
   color: #edf2ff;
 }
@@ -633,6 +909,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   padding: 20px;
   border-bottom: 1px solid #34435d;
 }
@@ -646,25 +923,43 @@ footer {
 }
 
 .dialog-content hr {
-  border: 0;
-  border-top: 1px solid #34435d;
   margin: 25px 0;
+
+  border: none;
+  border-top: 1px solid #34435d;
 }
 
-.full-btn {
-  width: 100%;
-  margin-top: 12px;
+footer {
+  padding: 20px 10px;
+
+  text-align: center;
+  color: #7f91ad;
+
+  font-size: 12px;
+  line-height: 1.6;
 }
 
-/* MÓVIL */
+/* ========================================
+   DISEÑO MÓVIL
+   ======================================== */
 
 @media (max-width: 600px) {
+
   .app {
     padding: 15px 12px 40px;
   }
 
   .header {
     margin-bottom: 20px;
+  }
+
+  .header-actions {
+    gap: 5px;
+  }
+
+  .icon-btn {
+    width: 38px;
+    height: 38px;
   }
 
   h1 {
@@ -716,6 +1011,14 @@ footer {
     font-size: 24px;
   }
 
+  .week-navigation {
+    gap: 6px;
+  }
+
+  .week-range {
+    font-size: 12px;
+  }
+
   .calendar-grid,
   .weekdays {
     gap: 4px;
@@ -747,81 +1050,6 @@ footer {
     font-size: 11px;
   }
 
-
-  
-/* ========================================
-   INICIO DE SESIÓN Y SINCRONIZACIÓN
-   ======================================== */
-
-.login-screen {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 65vh;
-  padding: 20px 0;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  background: #151f33;
-  border: 1px solid #293650;
-  border-radius: 22px;
-  padding: 32px;
-  box-shadow: 0 18px 45px #0003;
-}
-
-.login-symbol {
-  width: 58px;
-  height: 58px;
-  border-radius: 17px;
-  background: #28448f;
-  color: #d7e2ff;
-  display: grid;
-  place-items: center;
-  font-size: 36px;
-  margin-bottom: 20px;
-}
-
-.login-card h2 {
-  font-size: 26px;
-  margin-bottom: 9px;
-}
-
-.login-card > p {
-  color: #a2b2d0;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.login-card label {
-  margin-top: 20px;
-}
-
-.login-card .btn-primary {
-  margin-top: 25px;
-}
-
-.cloud-status {
-  position: sticky;
-  top: 10px;
-  z-index: 10;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  padding: 12px 16px;
-  background: #213b57;
-  border: 1px solid #41658c;
-  color: #d6e8ff;
-  font-size: 13px;
-}
-
-.cloud-status.error {
-  background: #49303d;
-  border-color: #8a4d59;
-  color: #ffd4d4;
-}
-
-@media (max-width: 600px) {
   .login-screen {
     min-height: 70vh;
   }
@@ -833,66 +1061,5 @@ footer {
   .login-card h2 {
     font-size: 23px;
   }
-}
-
-
-
-
-/* ======================================
-   NAVEGACIÓN Y CONTADOR SEMANAL
-   ====================================== */
-
-.week-navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
-  padding: 10px;
-  border-radius: 12px;
-  background: #1b2940;
-}
-
-.week-nav-btn {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  border: 1px solid #3b4c6b;
-  border-radius: 10px;
-  background: #253653;
-  color: #eaf0ff;
-  font-size: 25px;
-  cursor: pointer;
-}
-
-.week-nav-btn:hover {
-  background: #35517f;
-}
-
-.week-nav-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.week-navigation .week-range {
-  margin: 0;
-  text-align: center;
-  flex: 1;
-  color: #dce6fc;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-@media (max-width: 600px) {
-  .week-navigation {
-    gap: 6px;
-  }
-
-  .week-navigation .week-range {
-    font-size: 12px;
-  }
-}
 
 }

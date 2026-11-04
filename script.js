@@ -6,6 +6,8 @@
 // ========================================
 
 const STORAGE_KEY = "control-horario-v1";
+const EMAIL_KEY = "rememberedEmail";
+
 const DAILY_MINUTES = 480;
 
 const MONTHS = [
@@ -28,7 +30,9 @@ const DAY_TYPES = {
 };
 
 const $ = id => document.getElementById(id);
-const pad = n => String(n).padStart(2, "0");
+
+const pad = number =>
+  String(number).padStart(2, "0");
 
 // ========================================
 // ESTADO DE LA APLICACIÓN
@@ -46,8 +50,10 @@ let selectedDate = todayISO();
 let displayedMonth = monthStart(new Date());
 let selectedWeek = mondayOf(new Date());
 
+let loadingData = false;
+
 // ========================================
-// FECHAS
+// FUNCIONES DE FECHAS
 // ========================================
 
 function toISO(date) {
@@ -84,12 +90,17 @@ function addDays(date, amount) {
     date.getDate()
   );
 
-  result.setDate(result.getDate() + amount);
+  result.setDate(
+    result.getDate() + amount
+  );
+
   return result;
 }
 
 function mondayOf(date) {
-  return addDays(date, -(date.getDay() + 6) % 7);
+  const offset = (date.getDay() + 6) % 7;
+
+  return addDays(date, -offset);
 }
 
 function monthStart(date) {
@@ -109,7 +120,10 @@ function monthEnd(date) {
 }
 
 function isWeekday(date) {
-  return date.getDay() >= 1 && date.getDay() <= 5;
+  return (
+    date.getDay() >= 1 &&
+    date.getDay() <= 5
+  );
 }
 
 function shortDate(date) {
@@ -120,22 +134,26 @@ function shortDate(date) {
 }
 
 // ========================================
-// FORMATO DE HORAS
+// FORMATO Y CONVERSIÓN DE HORAS
 // ========================================
 
 function parseHours(value) {
-  const match =
-    /^(\d{1,3})(?::([0-5]\d))?$/.exec(
-      String(value).trim()
-    );
+  const text = String(value).trim();
 
-  if (!match) return null;
+  const match =
+    /^(\d{1,3})(?::([0-5]\d))?$/.exec(text);
+
+  if (!match) {
+    return null;
+  }
 
   const hours = Number(match[1]);
   const minutes = Number(match[2] || 0);
 
-  if (hours > 24 ||
-      (hours === 24 && minutes > 0)) {
+  if (
+    hours > 24 ||
+    (hours === 24 && minutes > 0)
+  ) {
     return null;
   }
 
@@ -145,20 +163,27 @@ function parseHours(value) {
 function formatHours(value) {
   const minutes = Math.abs(value);
 
-  return (
-    Math.floor(minutes / 60) + " h " +
-    pad(minutes % 60) + " min"
-  );
+  const hours = Math.floor(minutes / 60);
+  const remaining = minutes % 60;
+
+  return `${hours} h ${pad(remaining)} min`;
 }
 
 function formatBalance(value) {
-  return (value >= 0 ? "+" : "−") +
-    formatHours(value);
+  const sign = value >= 0 ? "+" : "−";
+
+  return sign + formatHours(value);
 }
 
 function balanceClass(value) {
-  if (value > 0) return "positive";
-  if (value < 0) return "negative";
+  if (value > 0) {
+    return "positive";
+  }
+
+  if (value < 0) {
+    return "negative";
+  }
+
   return "neutral";
 }
 
@@ -166,15 +191,25 @@ function applyBalance(element, value) {
   element.textContent = formatBalance(value);
 
   element.classList.remove(
-    "positive", "negative", "neutral"
+    "positive",
+    "negative",
+    "neutral"
   );
 
-  element.classList.add(balanceClass(value));
+  element.classList.add(
+    balanceClass(value)
+  );
 }
+
+// ========================================
+// MENSAJES
+// ========================================
 
 function showMessage(id, message, error = false) {
   const element = $(id);
+
   element.textContent = message;
+
   element.className = error
     ? "message error"
     : "message";
@@ -184,6 +219,7 @@ function cloudStatus(message, error = false) {
   const element = $("cloudStatus");
 
   element.textContent = message;
+
   element.className = error
     ? "cloud-status error"
     : "cloud-status";
@@ -224,6 +260,10 @@ function validBackup(data) {
   );
 }
 
+// ========================================
+// DATOS LOCALES ANTERIORES
+// ========================================
+
 function readPreviousLocalData() {
   try {
     const saved = JSON.parse(
@@ -231,8 +271,34 @@ function readPreviousLocalData() {
     );
 
     return validBackup(saved) ? saved : null;
+
   } catch {
     return null;
+  }
+}
+
+// ========================================
+// RECORDAR CORREO ELECTRÓNICO
+// ========================================
+
+// Solo guardamos el correo, nunca la contraseña.
+
+function loadRememberedEmail() {
+  const email = localStorage.getItem(EMAIL_KEY);
+
+  if (email) {
+    $("loginEmail").value = email;
+    $("rememberMe").checked = true;
+  } else {
+    $("rememberMe").checked = false;
+  }
+}
+
+function saveRememberedEmail(email) {
+  if ($("rememberMe").checked) {
+    localStorage.setItem(EMAIL_KEY, email);
+  } else {
+    localStorage.removeItem(EMAIL_KEY);
   }
 }
 
@@ -245,8 +311,17 @@ function showLogin() {
 
   $("loginScreen").hidden = false;
   $("appMain").hidden = true;
+
   $("logoutButton").hidden = true;
-  $("settingsDialog").close();
+  $("settingsButton").hidden = true;
+
+  if ($("settingsDialog").open) {
+    $("settingsDialog").close();
+  }
+
+  $("loginPassword").value = "";
+
+  loadRememberedEmail();
 
   cloudStatus("");
 }
@@ -254,8 +329,14 @@ function showLogin() {
 function showApplication() {
   $("loginScreen").hidden = true;
   $("appMain").hidden = false;
+
   $("logoutButton").hidden = false;
+  $("settingsButton").hidden = false;
 }
+
+// ========================================
+// INICIAR SESIÓN
+// ========================================
 
 $("loginForm").addEventListener(
   "submit",
@@ -266,8 +347,11 @@ $("loginForm").addEventListener(
     const password = $("loginPassword").value;
 
     const button = $("loginButton");
+
     button.disabled = true;
     button.textContent = "Accediendo...";
+
+    showMessage("loginMessage", "");
 
     try {
       const { data, error } =
@@ -276,25 +360,41 @@ $("loginForm").addEventListener(
           password
         });
 
-      if (error) throw error;
-      if (!data.user) {
-        throw new Error("No se pudo obtener el usuario.");
+      if (error) {
+        throw error;
       }
 
-      $("loginPassword").value = "";
+      if (!data.user) {
+        throw new Error(
+          "No se ha podido obtener el usuario."
+        );
+      }
+
       await openAccount(data.user);
+
+      // Guardamos la preferencia únicamente
+      // después de iniciar sesión correctamente.
+      saveRememberedEmail(email);
+
+      $("loginPassword").value = "";
+
     } catch (error) {
       showMessage(
         "loginMessage",
         "No se pudo iniciar sesión: " + error.message,
         true
       );
+
     } finally {
       button.disabled = false;
       button.textContent = "Iniciar sesión";
     }
   }
 );
+
+// ========================================
+// CERRAR SESIÓN
+// ========================================
 
 $("logoutButton").addEventListener(
   "click",
@@ -303,64 +403,89 @@ $("logoutButton").addEventListener(
       return;
     }
 
-    const { error } =
-      await supabaseClient.auth.signOut();
+    try {
+      const { error } =
+        await supabaseClient.auth.signOut();
 
-    if (error) {
-      cloudStatus(error.message, true);
-      return;
+      if (error) {
+        throw error;
+      }
+
+      state = {
+        initialBalance: 0,
+        entries: {}
+      };
+
+      cloudSettingsExists = false;
+
+      showLogin();
+
+    } catch (error) {
+      cloudStatus(
+        "Error al cerrar sesión: " + error.message,
+        true
+      );
     }
-
-    state = {
-      initialBalance: 0,
-      entries: {}
-    };
-
-    showLogin();
   }
 );
 
 // ========================================
-// CARGAR DATOS DESDE SUPABASE
+// ABRIR CUENTA
 // ========================================
 
 async function openAccount(user) {
-  cloudStatus("Cargando tus horas desde Supabase...");
+  cloudStatus(
+    "Cargando tus horas desde Supabase..."
+  );
 
   try {
     await loadCloudData(user.id);
 
     currentUser = user;
+
     showApplication();
     renderAll();
 
     cloudStatus("");
+
   } catch (error) {
     currentUser = null;
+
     showLogin();
 
-    showMessage(
-      "loginMessage",
-      "No se pudieron cargar tus datos: " + error.message,
-      true
-    );
+    throw error;
   }
 }
+
+// ========================================
+// CARGAR REGISTROS DE SUPABASE
+// ========================================
 
 async function loadCloudData(userId) {
   const entries = {};
   const pageSize = 500;
 
-  // Paginación para recuperar todos los registros.
-  for (let start = 0; ; start += pageSize) {
-    const { data, error } = await supabaseClient
-      .from("registros_horarios")
-      .select("fecha,tipo,minutos,nota")
-      .eq("user_id", userId)
-      .order("fecha", { ascending: true })
-      .range(start, start + pageSize - 1);
+  for (
+    let start = 0;
+    ;
+    start += pageSize
+  ) {
+    const { data, error } =
+      await supabaseClient
+        .from("registros_horarios")
+        .select("fecha,tipo,minutos,nota")
+        .eq("user_id", userId)
+        .order("fecha", {
+          ascending: true
+        })
+        .range(
+          start,
+          start + pageSize - 1
+        );
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     for (const row of data) {
       entries[row.fecha] = {
@@ -370,7 +495,9 @@ async function loadCloudData(userId) {
       };
     }
 
-    if (data.length < pageSize) break;
+    if (data.length < pageSize) {
+      break;
+    }
   }
 
   const { data: config, error: configError } =
@@ -380,7 +507,9 @@ async function loadCloudData(userId) {
       .eq("user_id", userId)
       .maybeSingle();
 
-  if (configError) throw configError;
+  if (configError) {
+    throw configError;
+  }
 
   cloudSettingsExists = config !== null;
 
@@ -391,59 +520,89 @@ async function loadCloudData(userId) {
 }
 
 // ========================================
-// GUARDAR Y BORRAR EN LA NUBE
+// GUARDAR REGISTRO EN SUPABASE
 // ========================================
 
 async function saveCloudEntry(dateKey, entry) {
   if (!currentUser) {
-    throw new Error("No hay sesión iniciada.");
+    throw new Error(
+      "No hay sesión iniciada."
+    );
   }
 
-  const { error } = await supabaseClient
-    .from("registros_horarios")
-    .upsert({
-      user_id: currentUser.id,
-      fecha: dateKey,
-      tipo: entry.type,
-      minutos: entry.minutes,
-      nota: entry.note
-    }, {
-      onConflict: "user_id,fecha"
-    });
+  const { error } =
+    await supabaseClient
+      .from("registros_horarios")
+      .upsert(
+        {
+          user_id: currentUser.id,
+          fecha: dateKey,
+          tipo: entry.type,
+          minutos: entry.minutes,
+          nota: entry.note
+        },
+        {
+          onConflict: "user_id,fecha"
+        }
+      );
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
+
+// ========================================
+// ELIMINAR REGISTRO DE SUPABASE
+// ========================================
 
 async function deleteCloudEntry(dateKey) {
   if (!currentUser) {
-    throw new Error("No hay sesión iniciada.");
+    throw new Error(
+      "No hay sesión iniciada."
+    );
   }
 
-  const { error } = await supabaseClient
-    .from("registros_horarios")
-    .delete()
-    .eq("user_id", currentUser.id)
-    .eq("fecha", dateKey);
+  const { error } =
+    await supabaseClient
+      .from("registros_horarios")
+      .delete()
+      .eq("user_id", currentUser.id)
+      .eq("fecha", dateKey);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
+
+// ========================================
+// GUARDAR CONFIGURACIÓN
+// ========================================
 
 async function saveCloudSettings(balance) {
   if (!currentUser) {
-    throw new Error("No hay sesión iniciada.");
+    throw new Error(
+      "No hay sesión iniciada."
+    );
   }
 
-  const { error } = await supabaseClient
-    .from("configuracion_horaria")
-    .upsert({
-      user_id: currentUser.id,
-      saldo_inicial: balance,
-      actualizado_en: new Date().toISOString()
-    }, {
-      onConflict: "user_id"
-    });
+  const { error } =
+    await supabaseClient
+      .from("configuracion_horaria")
+      .upsert(
+        {
+          user_id: currentUser.id,
+          saldo_inicial: balance,
+          actualizado_en: new Date().toISOString()
+        },
+        {
+          onConflict: "user_id"
+        }
+      );
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
+
   cloudSettingsExists = true;
 }
 
@@ -458,9 +617,11 @@ function getEntry(key) {
 function workedFor(key) {
   const entry = getEntry(key);
 
-  return entry?.type === "work"
-    ? entry.minutes
-    : 0;
+  if (!entry || entry.type !== "work") {
+    return 0;
+  }
+
+  return entry.minutes;
 }
 
 function expectedFor(key) {
@@ -470,6 +631,8 @@ function expectedFor(key) {
     return 0;
   }
 
+  // Sábado y domingo: 0 horas obligatorias.
+  // De lunes a viernes: 8 horas.
   return isWeekday(fromISO(key))
     ? DAILY_MINUTES
     : 0;
@@ -478,6 +641,10 @@ function expectedFor(key) {
 function dayBalance(key) {
   return workedFor(key) - expectedFor(key);
 }
+
+// ========================================
+// TOTALES DE UN PERÍODO
+// ========================================
 
 function getTotals(startKey, endKey) {
   let worked = 0;
@@ -495,8 +662,10 @@ function getTotals(startKey, endKey) {
 
     if (entry) {
       registered++;
+
       worked += workedFor(key);
       expected += expectedFor(key);
+
     } else if (
       isWeekday(date) &&
       key <= todayISO()
@@ -523,12 +692,17 @@ function getMonthTotals(date) {
 
 function getWeekTotals(date) {
   const monday = mondayOf(date);
+  const sunday = addDays(monday, 6);
 
   return getTotals(
     toISO(monday),
-    toISO(addDays(monday, 6))
+    toISO(sunday)
   );
 }
+
+// ========================================
+// SALDO GLOBAL
+// ========================================
 
 function getGlobalBalance() {
   let balance = state.initialBalance;
@@ -549,7 +723,10 @@ function getGlobalBalance() {
 function renderGlobalSummary() {
   const balance = getGlobalBalance();
 
-  applyBalance($("totalBalance"), balance);
+  applyBalance(
+    $("totalBalance"),
+    balance
+  );
 
   $("balanceDescription").textContent =
     balance > 0
@@ -568,7 +745,8 @@ function renderMonthSummary() {
   const totals = getMonthTotals(date);
 
   $("monthTitle").textContent =
-    `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+    `${MONTHS[date.getMonth()]} ` +
+    `${date.getFullYear()}`;
 
   $("monthWorked").textContent =
     formatHours(totals.worked);
@@ -576,7 +754,10 @@ function renderMonthSummary() {
   $("monthExpected").textContent =
     formatHours(totals.expected);
 
-  applyBalance($("monthBalance"), totals.balance);
+  applyBalance(
+    $("monthBalance"),
+    totals.balance
+  );
 
   $("monthBalanceText").textContent =
     totals.balance > 0
@@ -596,7 +777,6 @@ function renderMonthSummary() {
 // RESUMEN SEMANAL
 // ========================================
 
-
 function renderWeekSummary() {
   const monday = selectedWeek;
   const sunday = addDays(monday, 6);
@@ -607,7 +787,8 @@ function renderWeekSummary() {
   );
 
   $("weekRange").textContent =
-    `${shortDate(monday)} — ${shortDate(sunday)} ` +
+    `${shortDate(monday)} — ` +
+    `${shortDate(sunday)} ` +
     `${sunday.getFullYear()}`;
 
   $("weekWorked").textContent =
@@ -626,13 +807,13 @@ function renderWeekSummary() {
     `${totals.pending} laborables pendientes`;
 }
 
-
 // ========================================
 // CALENDARIO
 // ========================================
 
 function renderCalendar() {
   const grid = $("calendarGrid");
+
   grid.replaceChildren();
 
   const first = mondayOf(displayedMonth);
@@ -643,10 +824,13 @@ function renderCalendar() {
     const entry = getEntry(key);
 
     const button = document.createElement("button");
+
     button.type = "button";
     button.className = "calendar-day";
 
-    if (date.getMonth() !== displayedMonth.getMonth()) {
+    if (
+      date.getMonth() !== displayedMonth.getMonth()
+    ) {
       button.classList.add("other-month");
     }
 
@@ -670,8 +854,11 @@ function renderCalendar() {
 
     if (entry) {
       dot.classList.add(
-        entry.type === "work" ? "green" : "yellow"
+        entry.type === "work"
+          ? "green"
+          : "yellow"
       );
+
     } else if (
       isWeekday(date) &&
       key <= todayISO()
@@ -684,7 +871,11 @@ function renderCalendar() {
     button.setAttribute(
       "aria-label",
       date.toLocaleDateString("es-ES") +
-      (entry ? `, ${DAY_TYPES[entry.type]}` : "")
+      (
+        entry
+          ? `, ${DAY_TYPES[entry.type]}`
+          : ""
+      )
     );
 
     button.setAttribute(
@@ -693,11 +884,12 @@ function renderCalendar() {
     );
 
     button.addEventListener("click", () => {
-  selectedDate = key;
-  selectedWeek = mondayOf(date);
-  displayedMonth = monthStart(date);
-  renderAll();
-});
+      selectedDate = key;
+      selectedWeek = mondayOf(date);
+      displayedMonth = monthStart(date);
+
+      renderAll();
+    });
 
     grid.append(button);
   }
@@ -716,50 +908,69 @@ function renderEntryForm() {
   $("selectedDayTitle").textContent =
     name.charAt(0).toUpperCase() +
     name.slice(1) +
-    `, ${date.getDate()} de ${MONTHS[date.getMonth()]}`;
+    `, ${date.getDate()} de ` +
+    MONTHS[date.getMonth()];
 
-  $("dayType").value = entry?.type || "work";
+  $("dayType").value =
+    entry?.type || "work";
 
   $("hoursInput").value =
     entry?.type === "work"
-      ? `${Math.floor(entry.minutes / 60)}:${pad(entry.minutes % 60)}`
+      ? `${Math.floor(entry.minutes / 60)}:` +
+        `${pad(entry.minutes % 60)}`
       : "";
 
-  $("noteInput").value = entry?.note || "";
+  $("noteInput").value =
+    entry?.note || "";
+
   $("entryMessage").textContent = "";
 
   updateTypeFields();
 }
 
 function updateTypeFields() {
-  const work = $("dayType").value === "work";
+  const work =
+    $("dayType").value === "work";
 
   $("hoursContainer").hidden = !work;
   $("freeDayInfo").hidden = work;
 }
 
 // ========================================
-// MOVIMIENTOS
+// HISTORIAL DE MOVIMIENTOS
 // ========================================
 
 function renderHistory() {
   const list = $("historyList");
+
   list.replaceChildren();
 
-  const first = toISO(monthStart(displayedMonth));
-  const last = toISO(monthEnd(displayedMonth));
+  const first = toISO(
+    monthStart(displayedMonth)
+  );
+
+  const last = toISO(
+    monthEnd(displayedMonth)
+  );
 
   const records = Object.entries(state.entries)
-    .filter(([key]) => key >= first && key <= last)
-    .sort(([a], [b]) => b.localeCompare(a));
+    .filter(([key]) =>
+      key >= first && key <= last
+    )
+    .sort(([a], [b]) =>
+      b.localeCompare(a)
+    );
 
   $("historyCount").textContent =
     `${records.length} registros`;
 
-  if (!records.length) {
+  if (records.length === 0) {
     const empty = document.createElement("p");
+
     empty.className = "empty";
-    empty.textContent = "No hay registros en este mes.";
+    empty.textContent =
+      "No hay registros en este mes.";
+
     list.append(empty);
     return;
   }
@@ -776,46 +987,54 @@ function renderHistory() {
     info.className = "history-info";
 
     const title = document.createElement("strong");
+
     title.textContent =
       entry.type === "work"
         ? formatHours(entry.minutes)
         : DAY_TYPES[entry.type];
 
     const subtitle = document.createElement("small");
+
     subtitle.textContent =
       entry.note || DAY_TYPES[entry.type];
 
     info.append(title, subtitle);
 
     const balance = document.createElement("strong");
+
     balance.className =
-      "history-balance " + balanceClass(dayBalance(key));
-    balance.textContent = formatBalance(dayBalance(key));
+      "history-balance " +
+      balanceClass(dayBalance(key));
+
+    balance.textContent =
+      formatBalance(dayBalance(key));
 
     item.append(date, info, balance);
+
     list.append(item);
   }
 }
 
 // ========================================
-// RESUMEN ANUAL
+// HISTORIAL ANUAL
 // ========================================
 
 function renderYearSummary() {
   const year = displayedMonth.getFullYear();
   const tbody = $("yearTableBody");
+
   tbody.replaceChildren();
 
   $("yearTitle").textContent =
     `Resumen anual ${year}`;
 
-  let balance = 0;
+  let annualBalance = 0;
 
   for (let month = 0; month < 12; month++) {
     const date = new Date(year, month, 1);
     const totals = getMonthTotals(date);
 
-    balance += totals.balance;
+    annualBalance += totals.balance;
 
     const row = document.createElement("tr");
 
@@ -831,14 +1050,20 @@ function renderYearSummary() {
     worked.textContent = formatHours(totals.worked);
 
     const delta = document.createElement("td");
-    delta.textContent = formatBalance(totals.balance);
-    delta.className = balanceClass(totals.balance);
+
+    delta.textContent =
+      formatBalance(totals.balance);
+
+    delta.className =
+      balanceClass(totals.balance);
 
     row.append(name, worked, delta);
 
     row.addEventListener("click", () => {
       displayedMonth = date;
       selectedDate = toISO(date);
+      selectedWeek = mondayOf(date);
+
       renderAll();
 
       window.scrollTo({
@@ -850,8 +1075,15 @@ function renderYearSummary() {
     tbody.append(row);
   }
 
-  applyBalance($("yearBalance"), balance);
+  applyBalance(
+    $("yearBalance"),
+    annualBalance
+  );
 }
+
+// ========================================
+// ACTUALIZAR TODA LA WEB
+// ========================================
 
 function renderAll() {
   renderGlobalSummary();
@@ -875,11 +1107,14 @@ $("entryForm").addEventListener(
     const type = $("dayType").value;
     const note = $("noteInput").value.trim();
 
-    if (!Object.hasOwn(DAY_TYPES, type)) return;
+    if (!Object.hasOwn(DAY_TYPES, type)) {
+      return;
+    }
 
-    const minutes = type === "work"
-      ? parseHours($("hoursInput").value)
-      : 0;
+    const minutes =
+      type === "work"
+        ? parseHours($("hoursInput").value)
+        : 0;
 
     if (minutes === null) {
       showMessage(
@@ -887,6 +1122,7 @@ $("entryForm").addEventListener(
         "Introduce horas válidas, por ejemplo 8:16.",
         true
       );
+
       return;
     }
 
@@ -896,43 +1132,62 @@ $("entryForm").addEventListener(
         "La observación es demasiado larga.",
         true
       );
+
       return;
     }
 
-    if (selectedDate > todayISO() && type === "work") {
+    if (
+      selectedDate > todayISO() &&
+      type === "work"
+    ) {
       showMessage(
         "entryMessage",
         "No puedes registrar horas futuras.",
         true
       );
+
       return;
     }
 
     const key = selectedDate;
-    const entry = { type, minutes, note };
 
-    showMessage("entryMessage", "Guardando en la nube...");
+    const entry = {
+      type,
+      minutes,
+      note
+    };
 
     const button =
-      $("entryForm").querySelector('[type="submit"]');
+      $("entryForm").querySelector(
+        '[type="submit"]'
+      );
+
     button.disabled = true;
+
+    showMessage(
+      "entryMessage",
+      "Guardando en Supabase..."
+    );
 
     try {
       await saveCloudEntry(key, entry);
 
       state.entries[key] = entry;
+
       renderAll();
 
       showMessage(
         "entryMessage",
         "Jornada guardada en Supabase."
       );
+
     } catch (error) {
       showMessage(
         "entryMessage",
         "No se pudo guardar: " + error.message,
         true
       );
+
     } finally {
       button.disabled = false;
     }
@@ -940,7 +1195,7 @@ $("entryForm").addEventListener(
 );
 
 // ========================================
-// ELIMINAR JORNADA
+// BORRAR REGISTRO
 // ========================================
 
 $("deleteEntry").addEventListener(
@@ -954,75 +1209,93 @@ $("deleteEntry").addEventListener(
         "Este día no tiene registro.",
         true
       );
+
       return;
     }
 
-    if (!confirm("¿Eliminar este registro de la nube?")) {
+    if (
+      !confirm(
+        "¿Eliminar este registro de Supabase?"
+      )
+    ) {
       return;
     }
 
     const button = $("deleteEntry");
+
     button.disabled = true;
 
     try {
       await deleteCloudEntry(key);
 
       delete state.entries[key];
+
       renderAll();
 
       showMessage(
         "entryMessage",
         "Registro eliminado correctamente."
       );
+
     } catch (error) {
       showMessage(
         "entryMessage",
         "Error al eliminar: " + error.message,
         true
       );
+
     } finally {
       button.disabled = false;
     }
   }
 );
 
+// ========================================
+// CAMBIAR TIPO DE DÍA
+// ========================================
+
 $("dayType").addEventListener(
   "change",
   updateTypeFields
 );
 
-
 // ========================================
 // NAVEGACIÓN SEMANAL
 // ========================================
 
-$("prevWeek").addEventListener("click", () => {
-  selectedWeek = addDays(selectedWeek, -7);
+$("prevWeek").addEventListener(
+  "click",
+  () => {
+    selectedWeek = addDays(
+      selectedWeek,
+      -7
+    );
 
-  // Mostrar también el mes al que pertenece
-  // el lunes de la semana seleccionada.
-  displayedMonth = monthStart(selectedWeek);
-  selectedDate = toISO(selectedWeek);
+    displayedMonth = monthStart(selectedWeek);
+    selectedDate = toISO(selectedWeek);
 
-  renderAll();
-});
+    renderAll();
+  }
+);
 
-$("nextWeek").addEventListener("click", () => {
-  selectedWeek = addDays(selectedWeek, 7);
+$("nextWeek").addEventListener(
+  "click",
+  () => {
+    selectedWeek = addDays(
+      selectedWeek,
+      7
+    );
 
-  displayedMonth = monthStart(selectedWeek);
-  selectedDate = toISO(selectedWeek);
+    displayedMonth = monthStart(selectedWeek);
+    selectedDate = toISO(selectedWeek);
 
-  renderAll();
-});
-
+    renderAll();
+  }
+);
 
 // ========================================
 // NAVEGACIÓN MENSUAL
 // ========================================
-
-
-
 
 function changeMonth(offset) {
   displayedMonth = new Date(
@@ -1047,27 +1320,51 @@ $("nextMonth").addEventListener(
   () => changeMonth(1)
 );
 
-$("todayButton").addEventListener("click", () => {
-  selectedDate = todayISO();
-  selectedWeek = mondayOf(new Date());
-  displayedMonth = monthStart(new Date());
-  renderAll();
-});
-
-
 // ========================================
-// CONFIGURACIÓN
+// VOLVER AL DÍA ACTUAL
 // ========================================
 
-$("settingsButton").addEventListener("click", () => {
-  $("initialBalance").value = state.initialBalance;
-  $("settingsMessage").textContent = "";
-  $("settingsDialog").showModal();
-});
+$("todayButton").addEventListener(
+  "click",
+  () => {
+    selectedDate = todayISO();
+    selectedWeek = mondayOf(new Date());
+    displayedMonth = monthStart(new Date());
 
-$("closeSettings").addEventListener("click", () => {
-  $("settingsDialog").close();
-});
+    renderAll();
+  }
+);
+
+// ========================================
+// ABRIR CONFIGURACIÓN
+// ========================================
+
+$("settingsButton").addEventListener(
+  "click",
+  () => {
+    $("initialBalance").value =
+      state.initialBalance;
+
+    $("settingsMessage").textContent = "";
+
+    $("settingsDialog").showModal();
+  }
+);
+
+// ========================================
+// CERRAR CONFIGURACIÓN
+// ========================================
+
+$("closeSettings").addEventListener(
+  "click",
+  () => {
+    $("settingsDialog").close();
+  }
+);
+
+// ========================================
+// GUARDAR SALDO INICIAL
+// ========================================
 
 $("saveSettings").addEventListener(
   "click",
@@ -1085,25 +1382,34 @@ $("saveSettings").addEventListener(
         "Introduce un saldo válido en minutos.",
         true
       );
+
       return;
     }
+
+    const button = $("saveSettings");
+    button.disabled = true;
 
     try {
       await saveCloudSettings(balance);
 
       state.initialBalance = balance;
+
       renderAll();
 
       showMessage(
         "settingsMessage",
         "Saldo inicial guardado en Supabase."
       );
+
     } catch (error) {
       showMessage(
         "settingsMessage",
-        "Error: " + error.message,
+        "Error al guardar: " + error.message,
         true
       );
+
+    } finally {
+      button.disabled = false;
     }
   }
 );
@@ -1112,106 +1418,146 @@ $("saveSettings").addEventListener(
 // EXPORTAR COPIA DE SEGURIDAD
 // ========================================
 
-$("exportButton").addEventListener("click", () => {
-  const blob = new Blob(
-    [JSON.stringify(state, null, 2)],
-    { type: "application/json" }
-  );
+$("exportButton").addEventListener(
+  "click",
+  () => {
+    const blob = new Blob(
+      [JSON.stringify(state, null, 2)],
+      {
+        type: "application/json"
+      }
+    );
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
 
-  link.href = url;
-  link.download =
-    `control-horario-${todayISO()}.json`;
+    const link = document.createElement("a");
 
-  document.body.append(link);
-  link.click();
-  link.remove();
+    link.href = url;
+    link.download =
+      `control-horario-${todayISO()}.json`;
 
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
+    document.body.append(link);
+
+    link.click();
+    link.remove();
+
+    setTimeout(
+      () => URL.revokeObjectURL(url),
+      1000
+    );
+  }
+);
 
 // ========================================
-// IMPORTACIÓN SEGURA A LA NUBE
+// IMPORTAR DATOS A SUPABASE
 // ========================================
 
-// Solo añade fechas que todavía no existan.
-// No sobrescribe jornadas ya guardadas.
+// Las fechas existentes no se sobrescriben.
+
 async function mergeBackup(backup) {
   if (!currentUser) {
-    throw new Error("Debes iniciar sesión.");
+    throw new Error(
+      "Debes iniciar sesión."
+    );
   }
 
   if (!validBackup(backup)) {
-    throw new Error("Copia de seguridad no válida.");
+    throw new Error(
+      "Copia de seguridad no válida."
+    );
   }
 
-  // Obtener la situación actual de Supabase.
   await loadCloudData(currentUser.id);
 
   const missing = Object.entries(backup.entries)
-    .filter(([key]) => !Object.hasOwn(state.entries, key));
+    .filter(
+      ([key]) =>
+        !Object.hasOwn(state.entries, key)
+    );
 
-  // Insertar en lotes, sin sobrescribir conflictos.
-  for (let i = 0; i < missing.length; i += 100) {
-    const batch = missing.slice(i, i + 100)
-      .map(([key, entry]) => ({
-        user_id: currentUser.id,
-        fecha: key,
-        tipo: entry.type,
-        minutos: entry.minutes,
-        nota: entry.note
-      }));
+  for (
+    let i = 0;
+    i < missing.length;
+    i += 100
+  ) {
+    const batch = missing
+      .slice(i, i + 100)
+      .map(
+        ([key, entry]) => ({
+          user_id: currentUser.id,
+          fecha: key,
+          tipo: entry.type,
+          minutos: entry.minutes,
+          nota: entry.note
+        })
+      );
 
-    const { error } = await supabaseClient
-      .from("registros_horarios")
-      .upsert(batch, {
-        onConflict: "user_id,fecha",
-        ignoreDuplicates: true
-      });
+    const { error } =
+      await supabaseClient
+        .from("registros_horarios")
+        .upsert(batch, {
+          onConflict: "user_id,fecha",
+          ignoreDuplicates: true
+        });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   }
 
-  // Solo importar el saldo anterior si no existe
-  // configuración en la nube.
   if (!cloudSettingsExists) {
-    await saveCloudSettings(backup.initialBalance);
+    await saveCloudSettings(
+      backup.initialBalance
+    );
   }
 
   await loadCloudData(currentUser.id);
+
   renderAll();
 
   return missing.length;
 }
 
 // ========================================
-// IMPORTAR JSON
+// IMPORTAR DESDE ARCHIVO JSON
 // ========================================
 
-$("importButton").addEventListener("click", () => {
-  $("importFile").click();
-});
+$("importButton").addEventListener(
+  "click",
+  () => {
+    $("importFile").click();
+  }
+);
 
 $("importFile").addEventListener(
   "change",
   async event => {
     const file = event.target.files?.[0];
-    if (!file) return;
+
+    if (!file) {
+      return;
+    }
 
     try {
-      const backup = JSON.parse(await file.text());
+      const backup = JSON.parse(
+        await file.text()
+      );
 
       if (!validBackup(backup)) {
-        throw new Error("Formato JSON incorrecto.");
+        throw new Error(
+          "El archivo JSON no es válido."
+        );
       }
 
-      if (!confirm(
-        "Se añadirán las fechas que falten en la nube. " +
-        "Los registros existentes no se sobrescribirán. " +
-        "¿Continuar?"
-      )) return;
+      const confirmation = confirm(
+        "Se importarán las fechas que falten " +
+        "en Supabase. Los registros existentes " +
+        "se conservarán. ¿Continuar?"
+      );
+
+      if (!confirmation) {
+        return;
+      }
 
       showMessage(
         "settingsMessage",
@@ -1222,14 +1568,16 @@ $("importFile").addEventListener(
 
       showMessage(
         "settingsMessage",
-        `${count} registros enviados a Supabase.`
+        `${count} registros importados correctamente.`
       );
+
     } catch (error) {
       showMessage(
         "settingsMessage",
         "Error al importar: " + error.message,
         true
       );
+
     } finally {
       event.target.value = "";
     }
@@ -1237,7 +1585,7 @@ $("importFile").addEventListener(
 );
 
 // ========================================
-// MIGRAR REGISTROS LOCALES
+// MIGRAR ANTIGUOS REGISTROS LOCALES
 // ========================================
 
 $("migrateButton").addEventListener(
@@ -1248,17 +1596,21 @@ $("migrateButton").addEventListener(
     if (!backup) {
       showMessage(
         "settingsMessage",
-        "No se encontraron registros locales válidos. " +
-        "Puedes importar un archivo JSON.",
+        "No se encontraron registros locales válidos.",
         true
       );
+
       return;
     }
 
-    if (!confirm(
-      "¿Importar tus antiguas horas locales " +
-      "sin sobrescribir las que ya están en Supabase?"
-    )) return;
+    const confirmation = confirm(
+      "¿Importar las antiguas horas locales " +
+      "sin sobrescribir los registros actuales?"
+    );
+
+    if (!confirmation) {
+      return;
+    }
 
     try {
       showMessage(
@@ -1272,6 +1624,7 @@ $("migrateButton").addEventListener(
         "settingsMessage",
         `${count} registros antiguos incorporados.`
       );
+
     } catch (error) {
       showMessage(
         "settingsMessage",
@@ -1283,29 +1636,40 @@ $("migrateButton").addEventListener(
 );
 
 // ========================================
-// RECARGAR AL VOLVER A LA WEB
+// ACTUALIZACIÓN ENTRE DISPOSITIVOS
 // ========================================
 
-// Si modificas una jornada en otro dispositivo,
-// se recuperarán los cambios al volver a esta pestaña.
+// Al volver a la pestaña se recuperan
+// los últimos registros de Supabase.
+
 document.addEventListener(
   "visibilitychange",
   async () => {
     if (
       document.visibilityState !== "visible" ||
-      !currentUser
-    ) return;
+      !currentUser ||
+      loadingData
+    ) {
+      return;
+    }
+
+    loadingData = true;
 
     try {
       await loadCloudData(currentUser.id);
+
       renderAll();
       cloudStatus("");
+
     } catch (error) {
       cloudStatus(
         "No se pudieron actualizar los datos: " +
         error.message,
         true
       );
+
+    } finally {
+      loadingData = false;
     }
   }
 );
@@ -1317,7 +1681,11 @@ document.addEventListener(
 async function init() {
   $("loginScreen").hidden = true;
   $("appMain").hidden = true;
+
   $("logoutButton").hidden = true;
+  $("settingsButton").hidden = true;
+
+  loadRememberedEmail();
 
   cloudStatus("Comprobando sesión...");
 
@@ -1331,8 +1699,10 @@ async function init() {
     }
 
     await openAccount(data.user);
+
   } catch (error) {
     showLogin();
+
     showMessage(
       "loginMessage",
       "Error de conexión: " + error.message,
@@ -1340,5 +1710,9 @@ async function init() {
     );
   }
 }
+
+// ========================================
+// INICIAR APLICACIÓN
+// ========================================
 
 init();
