@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1222">
+    <meta name="description" content="Control personal de horas de trabajo">
+    <title>Mi Control Horario</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="script.js" defer></script>
+
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- CABECERA -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand-icon">◷</div>
+                <div>
+                    <span class="eyebrow">MI ESPACIO PERSONAL</span>
+                    <h1>Control horario</h1>
+                </div>
+            </div>
+
+            <button id="logoutButton" class="icon-btn" title="Cerrar sesión" aria-label="Cerrar sesión" hidden>
+                ⏻
+            </button>
+
+            <button id="settingsButton" class="icon-btn" title="Configuración" aria-label="Configuración">
+                ⚙
+            </button>
+        </header>
+
+
+        <!-- INICIO DE SESIÓN -->
+        <section id="loginScreen" class="login-screen" hidden>
+            <div class="login-card">
+                <div class="login-symbol">◷</div>
+
+                <h2>Bienvenido</h2>
+                <p>Accede a tu control horario personal.</p>
+
+                <form id="loginForm">
+                    <label for="loginEmail">Correo electrónico</label>
+                    <input type="email" id="loginEmail" autocomplete="username" placeholder="tu@email.com" required>
+
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" autocomplete="current-password"
+                        placeholder="Tu contraseña" required>
+
+                    <button type="submit" class="btn-primary full-btn" id="loginButton">
+                        Iniciar sesión
+                    </button>
+                </form>
+
+                <p id="loginMessage" class="message" role="status"></p>
+            </div>
+        </section>
+
+        <div id="cloudStatus" class="cloud-status" hidden role="status" aria-live="polite"></div>
+
+
+        <main id="appMain" hidden>
+
+            <!-- SALDO GLOBAL -->
+            <section class="hero">
+                <div class="hero-header">
+                    <div>
+                        <p class="hero-label">Saldo total acumulado</p>
+                        <h2 id="totalBalance">+0 h 00 min</h2>
+                        <p id="balanceDescription">Estás al día</p>
+                    </div>
+                    <div class="hero-icon">↗</div>
+                </div>
+                <div class="hero-footer">
+                    Todos los meses registrados · Jornada de 8 h
+                </div>
+            </section>
+
+            <!-- RESUMEN MENSUAL -->
+            <section class="panel">
+                <div class="section-header">
+                    <div>
+                        <span class="eyebrow">RESUMEN DEL MES</span>
+                        <h2>Balance mensual</h2>
+                    </div>
+
+                    <div class="month-navigation">
+                        <button id="prevMonth" aria-label="Mes anterior">‹</button>
+                        <span id="monthTitle"></span>
+                        <button id="nextMonth" aria-label="Mes siguiente">›</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Horas realizadas</span>
+                        <strong id="monthWorked">0 h 00 min</strong>
+                        <small>Tiempo registrado</small>
+                    </div>
+
+                    <div class="stat-box">
+                        <span class="stat-label">Horas obligatorias</span>
+                        <strong id="monthExpected">0 h 00 min</strong>
+                        <small>Días registrados</small>
+                    </div>
+                </div>
+
+                <div class="balance-box">
+                    <span>Saldo de este mes</span>
+                    <strong id="monthBalance">+0 h 00 min</strong>
+                    <small id="monthBalanceText">Sin diferencias</small>
+                </div>
+
+                <div class="period-info">
+                    <span id="monthDays">0 jornadas registradas</span>
+                    <span id="monthPending">0 días pendientes</span>
+                </div>
+            </section>
+
+            <!-- RESUMEN SEMANAL -->
+            <section class="panel">
+                <div class="section-header">
+                    <div>
+                        <span class="eyebrow">RESUMEN SEMANAL</span>
+                        <h2>Semana seleccionada</h2>
+                    </div>
+
+                    <button id="todayButton" class="text-btn">
+                        Ir a hoy
+                    </button>
+                </div>
+
+
+                <div class="week-navigation">
+                    <button type="button" id="prevWeek" class="week-nav-btn" aria-label="Semana anterior">
+                        ‹
+                    </button>
+
+                    <p id="weekRange" class="week-range"></p>
+
+                    <button type="button" id="nextWeek" class="week-nav-btn" aria-label="Semana siguiente">
+                        ›
+                    </button>
+                </div>
+
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Trabajadas</span>
+                        <strong id="weekWorked">0 h 00 min</strong>
+                    </div>
+
+                    <div class="stat-box">
+                        <span class="stat-label">Obligatorias</span>
+                        <strong id="weekExpected">0 h 00 min</strong>
+                    </div>
+                </div>
+
+                <div class="inline-balance">
+                    <span>Saldo semanal</span>
+                    <strong id="weekBalance">+0 h 00 min</strong>
+                </div>
+
+                <p class="helper" id="weekPending"></p>
+            </section>
+
+            <!-- CALENDARIO -->
+            <section class="panel">
+                <div class="section-header">
+                    <div>
+                        <span class="eyebrow">REGISTRO DIARIO</span>
+                        <h2>Calendario</h2>
+                    </div>
+
+                    <span class="small-muted">Selecciona un día</span>
+                </div>
+
+                <div class="weekdays">
+                    <span>L</span><span>M</span><span>X</span>
+                    <span>J</span><span>V</span><span>S</span>
+                    <span>D</span>
+                </div>
+
+                <div id="calendarGrid" class="calendar-grid"></div>
+
+                <div class="calendar-legend">
+                    <span><i class="dot green"></i>Registrado</span>
+                    <span><i class="dot yellow"></i>Festivo / libre</span>
+                    <span><i class="dot red"></i>Pendiente</span>
+                </div>
+            </section>
+
+            <!-- FORMULARIO DEL DÍA -->
+            <section class="panel" id="registerPanel">
+                <div class="section-header">
+                    <div>
+                        <span class="eyebrow">EDITAR JORNADA</span>
+                        <h2 id="selectedDayTitle">Seleccionar día</h2>
+                    </div>
+                </div>
+
+                <form id="entryForm">
+                    <label for="dayType">Tipo de día</label>
+
+                    <select id="dayType">
+                        <option value="work">Laborable</option>
+                        <option value="holiday">Festivo</option>
+                        <option value="vacation">Vacaciones</option>
+                        <option value="leave">Ausencia justificada</option>
+                        <option value="rest">Descanso / día libre</option>
+                    </select>
+
+                    <div id="hoursContainer">
+                        <label for="hoursInput">Horas trabajadas</label>
+                        <input type="text" id="hoursInput" inputmode="numeric" placeholder="Ej. 8:16"
+                            autocomplete="off">
+
+                        <p class="helper">
+                            Introduce las horas efectivas que aparecen
+                            en la aplicación de tu empresa.
+                        </p>
+                    </div>
+
+                    <p id="freeDayInfo" class="helper" hidden>
+                        Este tipo de día no genera horas obligatorias.
+                    </p>
+
+                    <label for="noteInput">Observaciones (opcional)</label>
+
+                    <textarea id="noteInput" rows="2" placeholder="Ej. Festivo local, vacaciones..."></textarea>
+
+                    <div class="form-buttons">
+                        <button type="button" id="deleteEntry" class="btn-secondary">
+                            Borrar
+                        </button>
+
+                        <button type="submit" class="btn-primary">
+                            Guardar día
+                        </button>
+                    </div>
+                </form>
+
+                <p id="entryMessage" class="message" role="status"></p>
+            </section>
+
+            <!-- MOVIMIENTOS MENSUALES -->
+            <section class="panel">
+                <div class="section-header">
+                    <div>
+                        <span class="eyebrow">DETALLE DEL MES</span>
+                        <h2>Movimientos</h2>
+                    </div>
+
+                    <span id="historyCount" class="small-muted"></span>
+                </div>
+
+                <div id="historyList" class="history-list"></div>
+            </section>
+
+            <!-- RESUMEN ANUAL -->
+            <section class="panel">
+                <div class="section-header">
+                    <div>
+                        <span class="eyebrow">HISTORIAL</span>
+                        <h2 id="yearTitle">Resumen anual</h2>
+                    </div>
+                </div>
+
+                <p class="helper">
+                    Selecciona un mes para consultar sus horas
+                    y modificar los registros.
+                </p>
+
+                <div class="table-wrapper">
+                    <table class="year-table">
+                        <thead>
+                            <tr>
+                                <th>Mes</th>
+                                <th>Trabajadas</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="yearTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="inline-balance year-total">
+                    <span>Balance anual</span>
+                    <strong id="yearBalance">+0 h 00 min</strong>
+                </div>
+            </section>
+
+            <footer>
+                Los datos se guardan en este navegador.
+                Usa las copias de seguridad para no perderlos.
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- CONFIGURACIÓN -->
+    <dialog id="settingsDialog" class="settings-dialog">
+
+        <div class="dialog-header">
+            <h2>Configuración</h2>
+            <button id="closeSettings" class="icon-btn" aria-label="Cerrar">✕</button>
+        </div>
+
+        <div class="dialog-content">
+            <p class="helper">
+                Jornada configurada: 8 horas diarias,
+                de lunes a viernes.
+            </p>
+
+            <label for="initialBalance">Saldo inicial (minutos)</label>
+            <input type="number" id="initialBalance" step="1">
+
+            <p class="helper">
+                Ejemplo: 90 significa +1 h 30 min.
+                Para deber 30 minutos, introduce -30.
+            </p>
+
+            <button id="saveSettings" class="btn-primary full-btn">
+                Guardar configuración
+            </button>
+
+            <hr>
+
+            <h3>Copias de seguridad</h3>
+
+            <p class="helper">
+                Puedes descargar tus registros e importarlos
+                en otro navegador o dispositivo.
+            </p>
+
+            <button id="exportButton" class="btn-secondary full-btn">
+                Exportar datos
+            </button>
+
+            <button id="importButton" class="btn-secondary full-btn">
+                Importar datos
+            </button>
+
+            <input type="file" id="importFile" accept=".json,application/json" hidden>
+
+
+            <hr>
+
+            <h3>Registros del ordenador</h3>
+            <p class="helper">
+                Si tenías horas guardadas en este navegador antes
+                de conectar Supabase, puedes copiarlas a tu cuenta.
+                Los días que ya existan en la nube se conservarán.
+            </p>
+
+            <button id="migrateButton" type="button" class="btn-secondary full-btn">
+                Importar mis horas anteriores
+            </button>
+
+
+            <p id="settingsMessage" class="message" role="status"></p>
+        </div>
+    </dialog>
+
+</body>
+
+</html>
